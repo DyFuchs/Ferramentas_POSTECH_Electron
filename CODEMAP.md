@@ -199,3 +199,6 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-19: GITHUB_REPO atualizado para DyFuchs/Ferramentas_POSTECH_Electron
 - 2026-06-19: Titulo do painel de Backup simplificado para "8 • Backup"
 - 2026-06-19: Titulo do painel de Feedback adicionado ao mapa de titulos
+- 2026-06-19: Nome do app mudado de "Organizador" para "Ferramentas POSTECH" em todos os arquivos
+- 2026-06-19: GH_TOKEN corrigido no workflow Mac (env no step)
+- 2026-06-19: Versao alinhada para 0.1.0 em todo o código

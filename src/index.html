@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Organizador de Arquivos POSTECH</title>
+<title>Ferramentas POSTECH</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -15,7 +15,7 @@
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-logo">ORGANIZADOR DE ARQUIVOS<br><span>POSTECH — FIAP • v<span id="sidebar-version">1.0.0</span></span></div>
+    <div class="sidebar-logo">FERRAMENTAS POSTECH<br><span>POSTECH — FIAP • v<span id="sidebar-version">1.0.0</span></span></div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Operações</div>
@@ -303,7 +303,7 @@
 
     <div class="panel" id="panel-credits">
       <div style="text-align:center;padding:3rem 2rem;max-width:500px;margin:0 auto">
-        <div style="font-weight:800;font-size:1.4rem;color:var(--primary);text-transform:uppercase;margin-bottom:.5rem">ORGANIZADOR DE ARQUIVOS</div>
+        <div style="font-weight:800;font-size:1.4rem;color:var(--primary);text-transform:uppercase;margin-bottom:.5rem">FERRAMENTAS POSTECH</div>
         <div style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem">POSTECH — FIAP</div>
         <div style="font-size:.72rem;opacity:.4;margin-bottom:2rem">Versão <span id="credits-version">1.0.0</span> • Electron + Rust • 2026</div>
         <div style="border-top:1px solid var(--border);padding-top:1.5rem">
@@ -446,7 +446,7 @@
 <script>
 // ============ APP VERSION ============
 const APP_VERSION = '0.1.0';
-const APP_NAME = 'Organizador de Arquivos POSTECH';
+const APP_NAME = 'Ferramentas POSTECH';
 const APP_YEAR = '2026';
 let modoOrganizar = 'Auto';
 var electronAvailable = false;
@@ -1513,7 +1513,7 @@ function generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSu
         html += '</table></div>';
     }
     
-    html += '<div class="footer">Gerado pelo Organizador POSTECH v' + APP_VERSION + ' • ' + now + '</div>';
+    html += '<div class="footer">Gerado pelo Ferramentas POSTECH v' + APP_VERSION + ' • ' + now + '</div>';
     
     // JavaScript inline para o HTML
     html += '<script>';
@@ -2852,7 +2852,7 @@ async function autoLoadLastProject() {
 // ============ TUTORIAL GUIADO ============
 const tutorialSteps = [
     {
-        title: 'Bem-vindo ao Organizador POSTECH! 👋',
+        title: 'Bem-vindo ao Ferramentas POSTECH! 👋',
         text: 'Este tutorial vai guiá-lo pelas principais funcionalidades da aplicação. Você pode pular a qualquer momento.',
         action: null
     },

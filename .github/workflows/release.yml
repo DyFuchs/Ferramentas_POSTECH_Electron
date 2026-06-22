@@ -49,6 +49,8 @@ jobs:
 
       - name: Build Electron app (Mac)
         if: matrix.platform == 'mac'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: npx electron-builder --mac --x64 --publish always
 
       - name: Build Electron app (Linux)

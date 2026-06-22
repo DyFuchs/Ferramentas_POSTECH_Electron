@@ -21,7 +21,7 @@
   },
   "build": {
     "appId": "com.postech.organizador",
-    "productName": "Organizador POSTECH",
+    "productName": "Ferramentas POSTECH",
     "directories": {
       "output": "dist"
     },
