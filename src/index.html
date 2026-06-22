@@ -1,0 +1,3071 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Organizador de Arquivos POSTECH</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ MODULOS (carregados antes do script inline) ============ -->
+<script src="modules/api.js"></script>
+<script src="modules/utils.js"></script>
+<script src="modules/ui-helpers.js"></script>
+
+<div class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">ORGANIZADOR DE ARQUIVOS<br><span>POSTECH — FIAP • v<span id="sidebar-version">1.0.0</span></span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Operações</div>
+    <div class="nav-item active" data-panel="panel-organizar" onclick="showPanel('panel-organizar')" title="Atalho: 1"><span class="nav-label">Organizar Arquivos</span></div>
+    <div class="nav-section">Ferramentas</div>
+    <div class="nav-item" data-panel="panel-email" onclick="showPanel('panel-email')" title="Atalho: 4"><span class="nav-label">Editor de Emails</span></div>
+    <div class="nav-item" data-panel="panel-excel" onclick="showPanel('panel-excel')" title="Atalho: 5"><span class="nav-label">Gerador de Planilhas</span></div>
+    <div class="nav-item" data-panel="panel-report" onclick="showPanel('panel-report')" title="Atalho: 6"><span class="nav-label">Gerar Relatório</span></div>
+    <div class="nav-item" data-panel="panel-projects" onclick="showPanel('panel-projects')" title="Atalho: 7"><span class="nav-label">Projetos</span></div>
+    <div class="nav-section">Sistema</div>
+    <div class="nav-item" data-panel="panel-config" onclick="showPanel('panel-config')" title="Atalho: 8"><span class="nav-label">Configurações</span></div>
+    <div class="nav-item" data-panel="panel-extras" onclick="showPanel('panel-extras')" title="Atalho: 9"><span class="nav-label">Extras</span></div>
+  </nav>
+</div>
+
+<div class="main">
+  <div class="content-header">
+    <h2 id="page-title">1 • Modo Automático</h2>
+    <div class="header-actions">
+      <button class="theme-toggle" onclick="openThemeQuickSwitch()"><span>🎨</span> Perfil</button>
+    </div>
+  </div>
+  <div class="content-body">
+
+    <div class="path-global">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <label style="margin-bottom:0">📁 Caminho da pasta</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span id="path-stats-summary" style="font-size:var(--fs-xs);color:var(--text-dim);display:none"></span>
+          <button class="btn btn-sm btn-secondary" onclick="togglePathExtract()" id="btn-toggle-path" style="display:none">▼ Detalhes</button>
+        </div>
+      </div>
+      <input type="text" id="global-path" placeholder="Cole o caminho aqui" onchange="extractPathInfo()">
+      <div class="path-extract" id="path-extract" style="display:none">
+        <div class="field"><label>Entrada</label><div style="display:flex;align-items:center;gap:4px"><input type="text" id="ext-curso" value="-" style="flex:1;padding:.3rem .5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface-dark);color:var(--primary);font-family:var(--mono);font-size:var(--fs-md);font-weight:var(--fw-bold)" onchange="generateEmail()"><button class="btn btn-sm btn-copy" onclick="copyField('ext-curso')" title="Copiar">📋</button></div></div>
+        <div class="field"><label>Sigla</label><div style="display:flex;align-items:center;gap:4px"><input type="text" id="ext-sigla" value="-" style="flex:1;padding:.3rem .5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface-dark);color:var(--primary);font-family:var(--mono);font-size:var(--fs-md);font-weight:var(--fw-bold)" onchange="generateEmail()"><button class="btn btn-sm btn-copy" onclick="copyField('ext-sigla')" title="Copiar">📋</button></div></div>
+        <div class="field"><label>Fase</label><div style="display:flex;align-items:center;gap:4px"><input type="text" id="ext-fase" value="-" style="flex:1;padding:.3rem .5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface-dark);color:var(--primary);font-family:var(--mono);font-size:var(--fs-md);font-weight:var(--fw-bold)" onchange="generateEmail()"><button class="btn btn-sm btn-copy" onclick="copyField('ext-fase')" title="Copiar">📋</button></div></div>
+        <div class="field"><label>Matéria</label><div style="display:flex;align-items:center;gap:4px"><input type="text" id="ext-materia" value="-" style="flex:1;padding:.3rem .5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface-dark);color:var(--primary);font-family:var(--mono);font-size:var(--fs-md);font-weight:var(--fw-bold)" onchange="generateEmail()"><button class="btn btn-sm btn-copy" onclick="copyField('ext-materia')" title="Copiar">📋</button></div></div>
+      </div>
+      <!-- Stats expansível -->
+      <div id="path-stats" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+        <div style="font-size:var(--fs-sm);font-weight:600;color:var(--primary);margin-bottom:6px">📊 Estatísticas</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="field"><label>Vídeos</label><div style="display:flex;align-items:center;gap:4px"><span id="stat-videos" style="color:var(--text);font-weight:var(--fw-bold)">-</span><button class="btn btn-sm btn-copy" onclick="copyText(document.getElementById('stat-videos').textContent)" title="Copiar">📋</button></div></div>
+          <div class="field"><label>Aulas</label><div style="display:flex;align-items:center;gap:4px"><span id="stat-aulas" style="color:var(--text);font-weight:var(--fw-bold)">-</span><button class="btn btn-sm btn-copy" onclick="copyText(document.getElementById('stat-aulas').textContent)" title="Copiar">📋</button></div></div>
+          <div class="field" style="grid-column:1/-1"><label>Duração Total</label><div style="display:flex;align-items:center;gap:4px"><span id="stat-duracao" style="color:var(--text);font-weight:var(--fw-bold)">-</span><button class="btn btn-sm btn-copy" onclick="copyText(document.getElementById('stat-duracao').textContent)" title="Copiar">📋</button></div></div>
+          <div class="field" style="grid-column:1/-1"><label>Duração (minutos)</label><div style="display:flex;align-items:center;gap:4px"><span id="stat-duracao-min" style="color:var(--text);font-weight:var(--fw-bold)">-</span><button class="btn btn-sm btn-copy" onclick="copyText(document.getElementById('stat-duracao-min').textContent)" title="Copiar">📋</button></div></div>
+        </div>
+        <div id="stat-duracao-por-aula" style="margin-top:6px;font-size:var(--fs-sm);color:var(--text-dim)"></div>
+      </div>
+    </div>
+
+    <div class="panel active" id="panel-organizar">
+      <div class="section-title">📁 Organizar Arquivos</div>
+      
+      <!-- Modos de operação -->
+      <div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btn-modo-auto" onclick="setModoOrganizar('Auto')" style="flex:1;min-width:120px">⚡ Automático</button>
+        <button class="btn btn-secondary" id="btn-modo-manual" onclick="setModoOrganizar('Manual')" style="flex:1;min-width:120px">✋ Manual</button>
+        <button class="btn btn-danger" id="btn-modo-reverse" onclick="setModoOrganizar('Reverse')" style="flex:1;min-width:120px">↩ Reverso</button>
+      </div>
+      
+      <!-- Descrição do modo ativo -->
+      <div id="modo-descricao" class="status-bar" style="margin-bottom:1rem"><div class="status-dot"></div><span>Modo Automático: detecta padrões "Aula N" nos nomes dos vídeos e cria pastas automaticamente</span></div>
+      
+      <!-- Opções de organização (expansível, só para Manual) -->
+      <div id="opcoes-organizacao" style="display:none;margin-bottom:1rem">
+        <div class="config-section-header" onclick="toggleConfigSection('cfg-org-options')" style="margin-top:0"><span>▶</span> Opções de Organização</div>
+        <div id="cfg-org-options" class="config-section-body" style="display:none">
+          <div class="form-group"><label>Quantidade de pastas "Aula" (0 = detectar automaticamente):</label><input type="text" id="manual-qtd" value="0" style="max-width:200px"></div>
+          <div class="form-group"><label><input type="checkbox" id="manual-extras"> Criar pastas extras (Capítulo de Projeto, Onboarding)</label></div>
+          <div class="form-group"><label><input type="checkbox" id="manual-no-report"> Organizar sem gerar relatório</label></div>
+        </div>
+      </div>
+      
+      <!-- Opções de desorganização (expansível, só para Reverso) -->
+      <div id="opcoes-desorganizacao" style="display:none;margin-bottom:1rem">
+        <div class="config-section-header" onclick="toggleConfigSection('cfg-rev-options')" style="margin-top:0"><span>▶</span> Opções de Desorganização</div>
+        <div id="cfg-rev-options" class="config-section-body" style="display:none">
+          <div class="form-group"><label><input type="checkbox" id="reverse-delete-reports"> Deletar relatórios (.txt) também</label></div>
+        </div>
+      </div>
+      
+      <!-- Botão executar -->
+      <div style="margin-bottom:1rem">
+        <button class="btn btn-primary" id="btn-executar-organizar" onclick="runAction(modoOrganizar)" style="width:100%;padding:.8rem;font-size:1rem">⚡ Executar Organização</button>
+      </div>
+      
+      <!-- Output -->
+      <div id="organizar-output"></div>
+    </div>
+
+    <div class="panel" id="panel-email">
+      <style>
+        #email-panel-inner *{font-weight:400!important;font-style:normal!important}
+        #email-panel-inner b.email-tag{font-weight:700!important;color:var(--primary)}
+        #email-panel-inner .email-subject-text{font-family:var(--mono);font-size:var(--fs-md);color:var(--primary);line-height:1.4}
+        #email-panel-inner .email-body-text{font-family:var(--mono);font-size:var(--fs-sm);color:var(--text);line-height:1.6;white-space:pre-wrap}
+      </style>
+      <div id="email-panel-inner" style="max-width:750px">
+        <div class="section-title">📧 Editor de Emails para Devs</div>
+        <div class="email-preview">
+          <div class="label">Assunto</div>
+          <div id="email-subject-preview" class="email-subject-text">-</div>
+          <div class="email-actions"><button class="btn btn-copy btn-sm" onclick="copySubject()">📋 Copiar Assunto</button></div>
+        </div>
+        <div class="email-preview">
+          <div class="label">Corpo do Email</div>
+          <div id="email-body-preview" class="email-body-text">-</div>
+          <div class="email-actions"><button class="btn btn-copy btn-sm" onclick="copyBody()">📋 Copiar Corpo</button></div>
+        </div>
+        <!-- Dropdown Tipo de vídeo -->
+        <div class="form-group" style="margin-top:1rem">
+          <label>Tipo de vídeo:</label>
+          <select id="email-tipo" onchange="generateEmail()">
+            <option value="varios">Matéria com vários vídeos</option>
+            <option value="boasVindas">Vídeo de Boas Vindas</option>
+            <option value="onboarding">Onboarding</option>
+            <option value="extra">Vídeo Extra</option>
+          </select>
+          <div style="font-size:var(--fs-xs);color:var(--text-dim);margin-top:4px">
+            <strong style="color:var(--text)">Matéria:</strong> email completo com todos os dados.<br>
+            <strong style="color:var(--text)">Boas Vindas/Onboarding:</strong> email simplificado para vídeo único de ambientação.<br>
+            <strong style="color:var(--text)">Extra:</strong> email para vídeo adicional sem fase específica.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-excel">
+      <div style="max-width:800px">
+        <div class="section-title">📊 Gerador de Planilhas</div>
+        <div class="form-group"><label>Títulos das Aulas (uma por linha):</label><textarea id="excel-titles" placeholder="Aula 1 - Introdução&#10;Aula 2 - Conceitos"></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:1.5rem">
+          <button class="btn btn-primary" onclick="generatePlanilha()">📊 Gerar Planilha</button>
+          <button class="btn btn-secondary btn-sm" id="btn-copy-table" onclick="copyTable()" style="display:none">📋 Copiar</button>
+          <button class="btn btn-secondary btn-sm" id="btn-download-csv" onclick="downloadCSV()" style="display:none">💾 CSV</button>
+        </div>
+        <div id="excel-output"></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-report">
+      <div class="status-bar"><div class="status-dot"></div><span>Gera relatório de organização sem modificar arquivos</span></div>
+      <div style="max-width:600px">
+        <button class="btn btn-primary" onclick="runAction('Report')">📄 Gerar Relatório</button>
+      </div>
+      <div id="report-output" style="margin-top:1.5rem"></div>
+    </div>
+
+    <div class="panel" id="panel-projects">
+      <div style="max-width:750px">
+        <div class="section-title">📁 Gerenciador de Projetos</div>
+        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Salve e carregue estados da aplicação. Cada projeto inclui o caminho da pasta, configurações e informações extraídas.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem">
+          <button class="btn btn-primary btn-sm" onclick="saveProject()">💾 Salvar Projeto Atual</button>
+          <button class="btn btn-sm" onclick="refreshProjects()">🔄 Atualizar Lista</button>
+        </div>
+        <div class="form-group"><label>Nome do novo projeto (editável):</label><input type="text" id="project-name-input" placeholder="Preencha os campos abaixo e clique em Salvar"></div>
+        <div id="projects-list" style="margin-top:1rem"><div style="color:var(--text-dim);padding:2rem;text-align:center">Nenhum projeto salvo ainda.</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-config">
+      <div style="max-width:600px">
+        <div class="section-title">⚙ Configurações</div>
+        <div style="margin-top:1rem">
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-comportamento')"><span>▶</span> Comportamento</div>
+          <div id="cfg-section-comportamento" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Pedir confirmação antes de executar</div></div><input type="checkbox" id="cfg-confirm" checked></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-aparencia')"><span>▶</span> Aparência</div>
+          <div id="cfg-section-aparencia" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Tamanho da fonte</div></div>
+              <select id="cfg-fontsize" onchange="applyFontSettings()">
+                <option value="12">Pequeno (12px)</option>
+                <option value="14" selected>Médio (14px)</option>
+                <option value="16">Grande (16px)</option>
+                <option value="18">Extra Grande (18px)</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Peso da fonte</div></div>
+              <select id="cfg-fontweight" onchange="applyFontSettings()">
+                <option value="400">Normal</option>
+                <option value="600" selected>Semi-Bold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra Bold</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Estilo</div></div>
+              <select id="cfg-fontstyle" onchange="applyFontSettings()">
+                <option value="normal" selected>Normal</option>
+                <option value="italic">Itálico</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Predefinições</div><div class="config-desc">Estilos rápidos de fonte</div></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('compact')">Compacto</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('normal')">Normal</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('large')">Grande</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('bold')">Bold</button>
+              </div>
+            </div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-perfis')"><span>▶</span> Perfis de Cores</div>
+          <div id="cfg-section-perfis" class="config-section-body" style="display:none">
+            <div id="profiles-editor"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-versoes')"><span>▶</span> Versões</div>
+          <div id="cfg-section-versoes" class="config-section-body" style="display:none">
+            <div id="versions-editor"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-relatorio')"><span>▶</span> Relatório</div>
+          <div id="cfg-section-relatorio" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Gerar relatório em HTML</div><div class="config-desc">Cria um relatório visual bonito com botões de copiar</div></div>
+              <input type="checkbox" id="cfg-report-html" onchange="saveConfig()"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-autosave')"><span>▶</span> Salvamento Automático</div>
+          <div id="cfg-section-autosave" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Salvar projeto automaticamente</div><div class="config-desc">Salva o estado atual periodicamente</div></div>
+              <select id="cfg-autosave" onchange="updateAutoSaveSetting()">
+                <option value="0">Desligado</option>
+                <option value="1">A cada 1 min</option>
+                <option value="5">A cada 5 min</option>
+                <option value="10" selected>A cada 10 min</option>
+                <option value="15">A cada 15 min</option>
+                <option value="20">A cada 20 min</option>
+              </select>
+            </div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-atalhos')"><span>▶</span> Atalhos de Teclado</div>
+          <div id="cfg-section-atalhos" class="config-section-body" style="display:none">
+            <div id="shortcuts-editor"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:1.5rem"><button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-extras">
+      <div class="action-grid">
+        <div class="action-card" onclick="showPanel('panel-credits')"><div class="card-icon">ℹ</div><h3>Créditos</h3><p>Informações sobre o desenvolvedor e versão</p></div>
+        <div class="action-card" onclick="showPanel('panel-documentation')"><div class="card-icon">📖</div><h3>Documentação</h3><p>Guia detalhado de uso da ferramenta</p></div>
+        <div class="action-card" onclick="startTutorial()"><div class="card-icon">🎓</div><h3>Tutorial Guiado</h3><p>Passo a passo interativo pela aplicação</p></div>
+        <div class="action-card" onclick="showPanel('panel-backup')"><div class="card-icon">💾</div><h3>Backup / Restauração</h3><p>Exportar e importar configurações e projetos</p></div>
+        <div class="action-card" onclick="showPanel('panel-feedback')"><div class="card-icon">📨</div><h3>Feedback / Reportar Bug</h3><p>Envie sugestões, reporte problemas ou dê feedback</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-feedback">
+      <div style="max-width:600px">
+        <div class="section-title">📨 Enviar Feedback</div>
+        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Sua mensagem será aberta como uma Issue no GitHub. Revise antes de enviar.</p>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Tipo</label>
+          <select id="feedback-type" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
+            <option value="bug">🐛 Bug / Problema</option>
+            <option value="feature">✨ Feature Request</option>
+            <option value="feedback">💬 Feedback Geral</option>
+          </select>
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Título</label>
+          <input type="text" id="feedback-title" placeholder="Descreva brevemente..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
+        </div>
+
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Descrição</label>
+          <textarea id="feedback-body" rows="6" placeholder="Detalhes, passos para reproduzir, esperado vs atual..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md);resize:vertical"></textarea>
+        </div>
+
+        <div style="margin-bottom:1.5rem;padding:.8rem;background:var(--surface-dark);border-radius:6px;border:1px solid var(--border)">
+          <div style="font-size:var(--fs-xs);color:var(--text-dim);margin-bottom:4px;font-weight:600">ℹ️ Informações do sistema (incluídas automaticamente)</div>
+          <div id="feedback-sysinfo" style="font-size:var(--fs-xs);color:var(--text-dim);font-family:var(--mono)">Carregando...</div>
+        </div>
+
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="submitFeedback()">📨 Enviar Feedback</button>
+          <button class="btn btn-secondary" onclick="showPanel('panel-extras')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-credits">
+      <div style="text-align:center;padding:3rem 2rem;max-width:500px;margin:0 auto">
+        <div style="font-weight:800;font-size:1.4rem;color:var(--primary);text-transform:uppercase;margin-bottom:.5rem">ORGANIZADOR DE ARQUIVOS</div>
+        <div style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem">POSTECH — FIAP</div>
+        <div style="font-size:.72rem;opacity:.4;margin-bottom:2rem">Versão <span id="credits-version">1.0.0</span> • Electron + Rust • 2026</div>
+        <div style="border-top:1px solid var(--border);padding-top:1.5rem">
+          <p style="font-weight:700;margin-bottom:.3rem">Desenvolvido por Diana Fuchs Santos</p>
+          <p style="opacity:.7;font-size:.85rem">para FIAP/POSTECH a partir de Maio/2026</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-documentation">
+      <div style="max-width:800px">
+        <div class="section-title">📖 Documentação Completa</div>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Visão Geral</h3>
+        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">O Organizador de Arquivos POSTECH é uma ferramenta desktop para organização de arquivos de vídeo acadêmicos. Desenvolvida com Electron + Rust, oferece automação completa para padronizar estruturas de pastas, gerar relatórios, emails e planilhas.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Arquitetura</h3>
+        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>Frontend:</strong> Electron (HTML/CSS/JS) — interface gráfica e lógica de apresentação</li>
+          <li><strong>Backend:</strong> Rust (sidecar) — operações de filesystem, parsing de vídeo, gerenciamento de projetos</li>
+          <li><strong>Comunicação:</strong> stdin/stdout JSON entre Electron e Rust</li>
+          <li><strong>Persistência:</strong> localStorage (configurações/atalhos) + filesystem (projetos)</li>
+        </ul>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Modos de Operação</h3>
+        <ol style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>Modo Automático:</strong> Detecta padrões "Aula N" nos nomes dos arquivos e cria pastas automaticamente. Extrai informações do caminho para preencher emails.</li>
+          <li><strong>Modo Manual:</strong> Permite definir todos os parâmetros: caminho, quantidade de pastas, pastas extras (Entrada, Edição, etc.).</li>
+          <li><strong>Modo Reverso:</strong> Move vídeos de volta para a raiz e remove pastas vazias. Suporta exclusão opcional de relatórios.</li>
+        </ol>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Extração de Caminho</h3>
+        <p style="opacity:.85;line-height:1.7">Ao colar um caminho de rede ou local, a ferramenta extrai automaticamente: <strong>Entrada</strong> (ex: 2025.1), <strong>Sigla</strong> (ex: 1GETT), <strong>Fase</strong> (ex: Fase 5) e <strong>Matéria</strong> (ex: Go-to-market e Escalabilidade). Essas informações preenchem os campos de email e organização.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Editor de Emails</h3>
+        <p style="opacity:.85;line-height:1.7">Gera automaticamente assunto e corpo do email com base nas informações extraídas. Os trechos entre colchetes (ex: [Matéria], [Fase]) são variáveis que aparecem em negrito com cor teal no preview. O botão "Copiar" copia como HTML para preservar formatação ao colar no cliente de email.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Gerador de Planilhas</h3>
+        <p style="opacity:.85;line-height:1.7">Gera uma tabela Markdown com links para todos os vídeos organizados. O botão "Copiar" usa clipboard HTML para preservar links ao colar no Google Sheets.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Relatório Inteligente</h3>
+        <p style="opacity:.85;line-height:1.7">Cria relatório detalhado com duração de cada vídeo (via API nativa do navegador), estrutura de pastas e resumo total. Adapta-se automaticamente: se os vídeos estão organizados em subpastas, mostra a estrutura; se estão na raiz, mostra como "Pasta Raiz" sem forçar organização inexistente.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Sistema de Projetos</h3>
+        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>Salvar:</strong> Salva estado atual (caminho, campos de email) com nome automático baseado em sigla + fase + matéria + data</li>
+          <li><strong>Carregar:</strong> Restaura projeto e processa automaticamente o caminho</li>
+          <li><strong>Renomear:</strong> Clique no botão ✏️ para editar o nome de qualquer projeto salvo</li>
+          <li><strong>Auto-save:</strong> Salva automaticamente a cada 1/5/10/15/20 minutos (configurável)</li>
+          <li><strong>Auto-carregar:</strong> Na inicialização, carrega automaticamente o último projeto salvo</li>
+        </ul>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Atalhos de Teclado</h3>
+        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>1-9:</strong> Navegam entre painéis (sem Ctrl/Cmd)</li>
+          <li><strong>Ctrl+Enter:</strong> Executa Modo Automático</li>
+          <li><strong>Ctrl+R:</strong> Executa Modo Reverso</li>
+          <li><strong>Ctrl+S:</strong> Gera Planilha</li>
+          <li><strong>Ctrl+P:</strong> Salva Projeto</li>
+          <li>Todos os atalhos são editáveis em Configurações &gt; Atalhos de Teclado</li>
+          <li>Suporte para até 3 teclas combinadas (ex: Ctrl+Shift+A)</li>
+          <li>Atalhos sem modificador não funcionam em campos de texto</li>
+        </ul>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Configurações</h3>
+        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>Comportamento:</strong> Confirmação antes de executar</li>
+          <li><strong>Aparência:</strong> Tamanho, peso e estilo da fonte + predefinições</li>
+          <li><strong>Salvamento Automático:</strong> Desligado, 1, 5, 10, 15 ou 20 minutos</li>
+          <li><strong>Atalhos:</strong> Editor com gravação de teclas (clique em "Editar" e pressione a combinação desejada)</li>
+        </ul>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Perfis de Cores</h3>
+        <p style="opacity:.85;line-height:1.7">Personalize completamente as cores da aplicação. Vem com dois perfis padrão (Escuro e Claro), mas você pode criar quantos quiser. Cada perfil permite configurar: fundo, superfícies, bordas, texto, cores primária/secundária/sucesso/erro, fundo da sidebar, cards, inputs, botões e sombras. Suporta gradientes CSS e imagem de fundo (URL ou base64). Acesse rapidamente pelo botão "Perfil" no canto superior direito ou em Configurações &gt; Aparência &gt; Perfis de Cores.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Backup / Restauração</h3>
+        <p style="opacity:.85;line-height:1.7">Crie backups completos de todas as configurações, atalhos, perfis de cores e projetos salvos. O backup é um arquivo JSON que pode ser transferido entre máquinas. Acesse em Extras &gt; Backup / Restauração.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Tutorial Guiado</h3>
+        <p style="opacity:.85;line-height:1.7">Na primeira execução, um tutorial interativo apresenta todas as funcionalidades. Pode ser acessado a qualquer momento em Extras &gt; Tutorial Guiado. Use os botões Avançar/Voltar para navegar, ou Pular Tutorial para sair.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Versão</h3>
+        <p style="opacity:.85;line-height:1.7">A versão atual da aplicação é exibida na sidebar e nos Créditos. O número de versão é centralizado em uma variável para facilitar atualizações futuras.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Cross-Platform</h3>
+        <p style="opacity:.85;line-height:1.7">A aplicação funciona em Windows, macOS e Linux. O backend Rust compila nativamente para cada plataforma. O Electron empacota tudo em um executável único sem dependências externas.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Problemas Conhecidos</h3>
+        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
+          <li><strong>Email bold:</strong> Requer CSS específico com !important para sobrescrever font-weight global</li>
+          <li><strong>Relatório lento:</strong> Resolvido — usa API do navegador em vez de parser Rust</li>
+          <li><strong>Auto-carregamento:</strong> Requer chamada explícita de extractPathInfo() após definir o caminho programaticamente</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-backup">
+      <div style="max-width:600px">
+        <div class="section-title">💾 Backup / Restauração</div>
+        <p style="opacity:.85;line-height:1.7;margin:1rem 0">Crie um backup completo de todas as suas configurações, atalhos, perfis de cores e projetos salvos. Você pode restaurar este backup posteriormente ou em outra instalação.</p>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Criar Backup</h3>
+        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">Exporta um arquivo JSON contendo: configurações gerais, atalhos de teclado, perfis de cores e lista de projetos salvos.</p>
+        <button class="btn btn-primary" onclick="createBackup()">📦 Criar Backup</button>
+
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Restaurar Backup</h3>
+        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">Importa um arquivo de backup e restaura todas as configurações. <strong style="color:var(--warning)">Atenção: isso substituirá todas as configurações atuais.</strong></p>
+        <button class="btn btn-secondary" onclick="restoreBackup()">📂 Restaurar Backup</button>
+
+        <div style="margin-top:2rem;padding:1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">
+          <div style="font-size:var(--fs-sm);color:var(--text-dim)">
+            <strong style="color:var(--text)">Dica:</strong> Crie backups regulares antes de fazer grandes mudanças nas configurações. O arquivo de backup pode ser transferido para outra máquina.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ============ MODAL DE CONFIRMAÇÃO ============ -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Confirmar Ação</h3>
+    </div>
+    <div class="modal-body">
+      <p id="modal-message"></p>
+      <div id="modal-details" class="modal-details"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" id="modal-confirm-btn" onclick="confirmModal()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ APP VERSION ============
+const APP_VERSION = '1.0.0';
+const APP_NAME = 'Organizador de Arquivos POSTECH';
+const APP_YEAR = '2026';
+let modoOrganizar = 'Auto';
+var electronAvailable = false;
+var rustListeners = [];
+
+async function initAPI() {
+    try {
+        if (window.electronAPI) {
+            electronAvailable = true;
+            console.log('Electron API disponível');
+            // Listener único para todas as respostas do Rust
+            const cleanup = window.electronAPI.onRustMessage((msg) => {
+                console.log('[RENDERER] Mensagem do Rust recebida:', msg);
+                for (const listener of rustListeners) {
+                    listener(msg);
+                }
+            });
+            console.log('[RENDERER] Listener registrado');
+        } else {
+            throw new Error('window.electronAPI não encontrado');
+        }
+    } catch(e) {
+        console.log('Electron API não disponível:', e.message);
+        electronAvailable = false;
+    }
+}
+
+async function invokeRust(cmd, args = {}) {
+    return new Promise((resolve, reject) => {
+        if (!electronAvailable) {
+            reject(new Error('Electron API não disponível'));
+            return;
+        }
+        const id = Date.now() + Math.random();
+        const timeout = setTimeout(() => {
+            rustListeners = rustListeners.filter(l => l._id !== id);
+            reject(new Error('Timeout aguardando resposta do backend'));
+        }, 120000);
+        const handler = (msg) => {
+            if (msg.type === 'success' || msg.type === 'error') {
+                clearTimeout(timeout);
+                rustListeners = rustListeners.filter(l => l._id !== id);
+                if (msg.type === 'success') resolve(msg.data);
+                else reject(new Error(msg.message));
+            }
+        };
+        handler._id = id;
+        rustListeners.push(handler);
+        window.electronAPI.sendCommand({ cmd, id, ...args });
+    });
+}
+
+// ============ TOAST ============
+function toast(msg, type) {
+    const c = document.getElementById('toast-container');
+    const d = document.createElement('div');
+    d.className = 'toast ' + (type || 'info');
+    d.textContent = msg;
+    c.appendChild(d);
+    setTimeout(() => { if(d.parentNode) d.parentNode.removeChild(d); }, 3500);
+}
+
+// ============ PANEL ============
+function showPanel(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    const el = document.getElementById(id);
+    if(el) el.classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    const nav = document.querySelector(`.nav-item[data-panel="${id}"]`);
+    if(nav) nav.classList.add('active');
+    const titles = {
+        'panel-organizar':'1 • Organizar Arquivos',
+        'panel-email':'2 • Editor de Emails',
+        'panel-excel':'3 • Gerador de Planilhas',
+        'panel-report':'4 • Relatório',
+        'panel-projects':'5 • Projetos',
+        'panel-config':'6 • Configurações',
+        'panel-extras':'7 • Extras',
+        'panel-backup':'8 • Backup',
+        'panel-credits':'Créditos',
+        'panel-documentation':'Documentação',
+        'panel-feedback':'Feedback'
+    };
+    document.getElementById('page-title').textContent = titles[id] || id;
+    // Renderiza editor de atalhos quando abrir configurações
+    if (id === 'panel-config') {
+        setTimeout(renderShortcutsEditor, 100);
+        setTimeout(renderProfilesEditor, 100);
+        setTimeout(renderVersionsEditor, 100);
+    }
+    // Atualiza lista de projetos quando abrir projetos
+    if (id === 'panel-projects') {
+        setTimeout(refreshProjects, 100);
+    }
+    // Inicializa formulário de feedback
+    if (id === 'panel-feedback') {
+        setTimeout(initFeedbackForm, 100);
+    }
+}
+
+// ============ THEME ============
+function toggleTheme() {
+    const html = document.documentElement;
+    if(html.getAttribute('data-theme') === 'light') html.removeAttribute('data-theme');
+    else html.setAttribute('data-theme', 'light');
+}
+
+// ============ FONT SETTINGS ============
+function applyFontSettings() {
+    const size = document.getElementById('cfg-fontsize').value || '14';
+    const weight = document.getElementById('cfg-fontweight').value || '600';
+    const style = document.getElementById('cfg-fontstyle').value || 'normal';
+    document.documentElement.style.setProperty('--font-size', size + 'px');
+    document.documentElement.style.setProperty('--font-weight', weight);
+    document.documentElement.style.setProperty('--font-style', style);
+}
+
+function applyFontPreset(preset) {
+    const presets = {
+        compact: { size: '12', weight: '600', style: 'normal' },
+        normal: { size: '14', weight: '600', style: 'normal' },
+        large: { size: '16', weight: '700', style: 'normal' },
+        bold: { size: '14', weight: '800', style: 'normal' }
+    };
+    const p = presets[preset] || presets.normal;
+    document.getElementById('cfg-fontsize').value = p.size;
+    document.getElementById('cfg-fontweight').value = p.weight;
+    document.getElementById('cfg-fontstyle').value = p.style;
+    applyFontSettings();
+}
+
+// ============ CONFIG ============
+function buildConfig() {
+    var config = {};
+    var el;
+    el = document.getElementById('global-path');
+    config.last_used_path = el ? el.value || '' : '';
+    el = document.getElementById('cfg-confirm');
+    config.confirm_required = el ? el.checked : true;
+    config.theme = document.documentElement.getAttribute('data-theme') || 'dark';
+    el = document.getElementById('cfg-fontsize');
+    config.font_size = el ? el.value || '14' : '14';
+    el = document.getElementById('cfg-fontweight');
+    config.font_weight = el ? el.value || '600' : '600';
+    el = document.getElementById('cfg-fontstyle');
+    config.font_style = el ? el.value || 'normal' : 'normal';
+    config.shortcuts = shortcuts;
+    config.activeProfile = activeProfile;
+    config.colorProfiles = colorProfiles;
+    el = document.getElementById('cfg-autosave');
+    if (el) config.auto_save_minutos = parseInt(el.value) || 0;
+    // Versões
+    var savedCfg = null;
+    try { savedCfg = JSON.parse(localStorage.getItem('organizador_config') || '{}'); } catch(e) {}
+    if (savedCfg && savedCfg.auto_check_updates !== undefined) config.auto_check_updates = savedCfg.auto_check_updates;
+    if (savedCfg && savedCfg.backup_before_update !== undefined) config.backup_before_update = savedCfg.backup_before_update;
+    // Relatório
+    el = document.getElementById('cfg-report-html');
+    config.report_html = el ? el.checked : false;
+    return config;
+}
+
+function saveConfigSilent(cfg) {
+    const clean = {};
+    for (const [k, v] of Object.entries(cfg)) {
+        if (v !== null && v !== undefined) clean[k] = v;
+    }
+    clean.shortcuts = shortcuts;
+    clean.activeProfile = activeProfile;
+    clean.colorProfiles = colorProfiles;
+    if(electronAvailable) {
+        invokeRust('salvarConfig', { config: clean }).catch(e => {
+            console.log('Erro ao salvar no backend, salvando local:', e);
+            localStorage.setItem('app_config', JSON.stringify(clean));
+        });
+    } else {
+        localStorage.setItem('app_config', JSON.stringify(clean));
+    }
+}
+
+async function saveConfig() {
+    const config = buildConfig();
+    console.log('[SAVE] config:', JSON.stringify(config));
+
+    // Feedback visual no botão
+    const btn = document.querySelector('button[onclick="saveConfig()"]');
+    const originalText = btn ? btn.textContent : '';
+    if (btn) btn.textContent = '⏳ Salvando...';
+
+    if(electronAvailable) {
+        try {
+            const result = await invokeRust('salvarConfig', { config });
+            console.log('[SAVE] Rust respondeu:', JSON.stringify(result));
+            localStorage.setItem('organizador_config', JSON.stringify(config));
+            console.log('[SAVE] Salvo no localStorage:', localStorage.getItem('organizador_config'));
+            if (btn) btn.textContent = '✅ Salvo!';
+            toast('✓ Configurações salvas com sucesso!', 'success');
+        } catch(e) {
+            console.log('[SAVE] Erro ao salvar no backend, salvando local:', e);
+            localStorage.setItem('organizador_config', JSON.stringify(config));
+            if (btn) btn.textContent = '✅ Salvo (local)!';
+            toast('✓ Configurações salvas (local)!', 'success');
+        }
+    } else {
+        localStorage.setItem('organizador_config', JSON.stringify(config));
+        if (btn) btn.textContent = '✅ Salvo (local)!';
+        toast('✓ Configurações salvas (local)!', 'success');
+    }
+
+    // Restaura texto do botão após 2 segundos
+    setTimeout(() => { if (btn) btn.textContent = originalText; }, 2000);
+}
+
+async function loadConfig() {
+    var config = null;
+    if(electronAvailable) {
+        try {
+            config = await invokeRust('lerConfig');
+            console.log('[LOAD] Rust retornou:', JSON.stringify(config));
+        } catch(e) {
+            console.log('[LOAD] Erro ao ler config do backend:', e);
+        }
+    }
+    if(!config || typeof config !== 'object' || Array.isArray(config)) {
+        var saved = localStorage.getItem('organizador_config');
+        if(saved) {
+            try { config = JSON.parse(saved); } catch(e) { config = null; }
+            console.log('[LOAD] localStorage:', JSON.stringify(config));
+        }
+    }
+    if(config && typeof config === 'object') {
+        if(config.last_used_path) document.getElementById('global-path').value = config.last_used_path;
+        // Suporta ambos os formatos: confirm_required (JS) e confirmRequired (Rust)
+        var confirmVal = config.confirm_required !== undefined ? config.confirm_required : config.confirmRequired;
+        if(confirmVal !== undefined && confirmVal !== null) {
+            var el = document.getElementById('cfg-confirm');
+            if (el) {
+                el.checked = confirmVal;
+                console.log('[LOAD] confirm_required:', confirmVal);
+            }
+        }
+        if(config.theme === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        if(config.font_size) document.getElementById('cfg-fontsize').value = config.font_size;
+        if(config.font_weight) document.getElementById('cfg-fontweight').value = config.font_weight;
+        if(config.font_style) document.getElementById('cfg-fontstyle').value = config.font_style;
+        applyFontSettings();
+
+        // Versões - ler do container dinâmico
+        var versionsContainer = document.getElementById('versions-editor');
+        if (versionsContainer) {
+            var checkboxes = versionsContainer.querySelectorAll('input[type="checkbox"]');
+            if (checkboxes.length >= 1 && config.auto_check_updates !== undefined) {
+                checkboxes[0].checked = config.auto_check_updates;
+            }
+            if (checkboxes.length >= 2 && config.backup_before_update !== undefined) {
+                checkboxes[1].checked = config.backup_before_update;
+            }
+        }
+        // Relatório
+        if(config.report_html !== undefined) {
+            var reportEl = document.getElementById('cfg-report-html');
+            if (reportEl) reportEl.checked = config.report_html;
+        }
+    }
+    return config;
+}
+function extractPathInfo() {
+        const rawPath = document.getElementById('global-path').value.trim();
+    if(!rawPath) { document.getElementById('path-extract').style.display = 'none'; return; }
+    let raw = rawPath.replace(/\\/g,'/').replace(/\/+/g,'/').replace(/\/$/,'');
+    raw = raw.replace(/^[A-Z]:\//i,'');
+    raw = raw.replace(/^\/\/[a-zA-Z0-9\-\.]+\/\$?\//i,'');
+    raw = raw.replace(/^\/\/\w+\/\$?\//i,'');
+    raw = raw.replace(/^\/\/\d+\.\d+\.\d+\.\d+\/\$?\//i,'');
+const dirParts = raw.split('/').filter(p => p.trim() !== '');
+    const endSkip = {'saida':1,'output':1,'videos':1,'entrada':1,'input':1,'edicao':1,'edited':1,'videos finalizados':1,'finalizados':1};
+    while(dirParts.length > 0 && endSkip[dirParts[dirParts.length-1].toLowerCase()]) dirParts.pop();
+    const startSkip = {'fiap':1,'postech':1,'hermes':1,'cursos':1,'courses':1};
+    while(dirParts.length > 0 && startSkip[dirParts[0].toLowerCase()]) dirParts.shift();
+    const fullPath = dirParts.join(' ');
+    let entrada = '-', sigla = '-', fase = '-', materia = '-';
+    const fm = fullPath.match(/fase\s*(\d+)/i);
+    if(fm) fase = 'Fase ' + fm[1];
+    const combined = fullPath.match(/(\d{4}\s*\.\s*\d)\s*-\s*(\d[A-Z]{2,6})\b/i);
+    if(combined) { entrada = combined[1].replace(/\s/g,''); sigla = combined[2].toUpperCase(); }
+    if(entrada === '-') { const am = fullPath.match(/(\d{4}\s*\.\s*\d)/); if(am) entrada = am[1].replace(/\s/g,''); }
+    if(sigla === '-') { for(let i=0;i<dirParts.length;i++) { if(dirParts[i].match(/^(\d[A-Z]{2,6})$/i)) { sigla = dirParts[i].toUpperCase(); break; } } }
+    const ignoreList = [entrada, sigla, fase, 'fiap','postech','hermes','servidor'];
+    const candidates = [];
+    for(let i=0;i<dirParts.length;i++) {
+        const s = dirParts[i].trim();
+        if(s.length < 3) continue;
+        if(!/[a-zA-Z]/.test(s)) continue;
+        if(/^\d+\.\d+\.\d+\.\d+$/.test(s)) continue;
+        if(/^[\d.]+$/.test(s)) continue;
+        let isIgnored = false;
+        for(let j=0;j<ignoreList.length;j++) { if(ignoreList[j] && s.toLowerCase() === ignoreList[j].toLowerCase()) { isIgnored = true; break; } }
+        if(!isIgnored) candidates.push(s);
+    }
+    for(let i=0;i<candidates.length;i++) { const s = candidates[i]; if(s.indexOf(' ')>=0||s.length>8) { materia=s; break; } }
+    if(materia==='-') { materia = candidates[0] || '-'; }
+    if(materia!=='-' && materia.indexOf(' - ')>=0) {
+        const parts = materia.split(' - ');
+        const cleanParts = [];
+        for(let i=0;i<parts.length;i++) { const p=parts[i].trim(); if(p===entrada||p===sigla||p.match(/^fase\\s*\\d+$/i)) continue; if(p.length>=3&&/[a-zA-Z]/.test(p)) cleanParts.push(p); }
+        if(cleanParts.length>0) materia = cleanParts.join(' - ');
+    }
+    document.getElementById('ext-curso').value = entrada;
+    document.getElementById('ext-fase').value = fase;
+    document.getElementById('ext-materia').value = materia;
+    document.getElementById('ext-sigla').value = sigla;
+    document.getElementById('path-extract').style.display = 'grid';
+    document.getElementById('btn-toggle-path').style.display = 'inline-flex';
+    // Limpa highlights de caminhos copiados ao mudar caminho
+    document.querySelectorAll('[data-copied]').forEach(el => { el.style.outline = ''; el.dataset.copied = ''; });
+    // Gera email com os novos valores
+    generateEmail();
+}
+
+// ============ PATH UI HELPERS ============
+function togglePathExtract() {
+    const el = document.getElementById('path-extract');
+    const btn = document.getElementById('btn-toggle-path');
+    const stats = document.getElementById('path-stats');
+    if (el.style.display === 'none') {
+        el.style.display = 'grid';
+        stats.style.display = 'block';
+        btn.textContent = '▲ Minimizar';
+    } else {
+        el.style.display = 'none';
+        stats.style.display = 'none';
+        btn.textContent = '▼ Detalhes';
+    }
+}
+
+function copyField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const val = el.value || el.textContent;
+    if (val && val !== '-') {
+        copyText(val);
+        // Highlight feedback
+        el.style.outline = '2px solid var(--success)';
+        el.style.transition = 'outline .3s';
+        setTimeout(() => { el.style.outline = ''; }, 1500);
+    }
+}
+
+function copyText(text) {
+    if (!text || text === '-') return;
+    navigator.clipboard.writeText(text).then(() => {
+        toast('Copiado: ' + text, 'success');
+    }).catch(() => {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast('Copiado: ' + text, 'success');
+    });
+}
+
+function updatePathStats(videos, grupos) {
+    const totalVideos = videos ? videos.length : 0;
+    const totalAulas = grupos ? grupos.length : 0;
+    document.getElementById('stat-videos').textContent = totalVideos;
+    document.getElementById('stat-aulas').textContent = totalAulas;
+    const summary = document.getElementById('path-stats-summary');
+    if (summary && totalVideos > 0) {
+        summary.textContent = totalVideos + ' vídeos • ' + totalAulas + ' aulas';
+        summary.style.display = 'inline';
+    }
+    document.getElementById('btn-toggle-path').style.display = 'inline-flex';
+}
+
+function updatePathDurations(durationsByAula, totalDuration) {
+    document.getElementById('stat-duracao').textContent = fmtDuration(totalDuration);
+    document.getElementById('stat-duracao-min').textContent = (totalDuration / 60).toFixed(1) + ' min';
+    let porAulaHtml = '';
+    for (const [aula, dur] of Object.entries(durationsByAula)) {
+        porAulaHtml += '<div style="display:flex;justify-content:space-between;padding:2px 0"><span>' + aula + '</span><span style="color:var(--primary);font-family:var(--mono)">' + fmtDuration(dur) + '</span></div>';
+    }
+    document.getElementById('stat-duracao-por-aula').innerHTML = porAulaHtml;
+}
+
+// ============ RUN ACTIONS ============
+function setModoOrganizar(modo) {
+    modoOrganizar = modo;
+    // Atualiza visual dos botões
+    document.getElementById('btn-modo-auto').className = 'btn btn-secondary';
+    document.getElementById('btn-modo-manual').className = 'btn btn-secondary';
+    document.getElementById('btn-modo-reverse').className = 'btn btn-secondary';
+    
+    if (modo === 'Auto') {
+        document.getElementById('btn-modo-auto').className = 'btn btn-primary';
+        document.getElementById('modo-descricao').innerHTML = '<div class="status-dot"></div><span>Modo Automático: detecta padrões nos nomes dos vídeos e cria pastas automaticamente</span>';
+        document.getElementById('opcoes-organizacao').style.display = 'none';
+        document.getElementById('opcoes-desorganizacao').style.display = 'none';
+        document.getElementById('btn-executar-organizar').textContent = '⚡ Executar Organização';
+        document.getElementById('btn-executar-organizar').className = 'btn btn-primary';
+    } else if (modo === 'Manual') {
+        document.getElementById('btn-modo-manual').className = 'btn btn-primary';
+        document.getElementById('modo-descricao').innerHTML = '<div class="status-dot" style="background:var(--warning)"></div><span>Modo Manual: defina o número de pastas e opções extras</span>';
+        document.getElementById('opcoes-organizacao').style.display = 'block';
+        document.getElementById('opcoes-desorganizacao').style.display = 'none';
+        document.getElementById('btn-executar-organizar').textContent = '⚡ Executar Organização';
+        document.getElementById('btn-executar-organizar').className = 'btn btn-primary';
+    } else if (modo === 'Reverse') {
+        document.getElementById('btn-modo-reverse').className = 'btn btn-danger';
+        document.getElementById('modo-descricao').innerHTML = '<div class="status-dot" style="background:var(--danger)"></div><span>Modo Reverso: move vídeos de volta para a raiz e remove pastas vazias</span>';
+        document.getElementById('opcoes-organizacao').style.display = 'none';
+        document.getElementById('opcoes-desorganizacao').style.display = 'block';
+        document.getElementById('btn-executar-organizar').textContent = '↩ Reverter Organização';
+        document.getElementById('btn-executar-organizar').className = 'btn btn-danger';
+    }
+    // Limpa output anterior
+    document.getElementById('organizar-output').innerHTML = '';
+}
+
+// Inicializa o modo (será chamado no DOMContentLoaded após loadConfig)
+
+async function runAction(mode) {
+    const path = document.getElementById('global-path').value.trim();
+    if(!path) { toast('Informe o caminho da pasta', 'error'); return; }
+
+    // Verifica se precisa de confirmação (ações que modificam arquivos)
+    const needsConfirm = (mode === 'Auto' || mode === 'Manual' || mode === 'Reverse');
+    const confirmRequired = document.getElementById('cfg-confirm')?.checked || false;
+
+    if (needsConfirm && confirmRequired) {
+        // Busca informações sobre os vídeos para mostrar no modal
+        if (electronAvailable) {
+            try {
+                const videos = await invokeRust('listarVideos', { caminho: path });
+                const grupos = await invokeRust('agruparPorAula', { videos });
+                let details = `<strong>Pasta:</strong> ${path}<br><strong>Modo:</strong> ${mode}<br>`;
+                details += `<strong>Vídeos detectados:</strong> ${videos.length}<br>`;
+                details += `<strong>Aulas detectadas:</strong> ${grupos.length}<br><br>`;
+                details += `<strong>Estrutura esperada:</strong><br>`;
+                for (const g of grupos) {
+                    details += `&nbsp;&nbsp;📁 ${g.titulo}/ (${g.num_videos} vídeos)<br>`;
+                    for (const v of g.videos.slice(0, 3)) {
+                        const nome = v.replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+                        details += `&nbsp;&nbsp;&nbsp;&nbsp;• ${nome}<br>`;
+                    }
+                    if (g.videos.length > 3) {
+                        details += `&nbsp;&nbsp;&nbsp;&nbsp;... e mais ${g.videos.length - 3}<br>`;
+                    }
+                }
+                if (mode === 'Auto' || mode === 'Manual') {
+                    const criarExtras = document.getElementById(mode==='Auto'?'org-extras':'manual-extras')?.checked || false;
+                    if (criarExtras) {
+                        details += `<br>📁 Capítulo de Projeto/<br>📁 Onboarding/<br>`;
+                    }
+                }
+                const title = mode === 'Reverse' ? 'Confirmar Reversão' : 'Confirmar Organização';
+                const message = mode === 'Reverse' 
+                    ? 'Deseja reverter a organização? Os vídeos voltarão para a pasta raiz.'
+                    : 'Deseja organizar os vídeos nas pastas por aula?';
+                showConfirmModal(title, message, details, () => executeAction(mode));
+            } catch(e) {
+                // Se falhar ao buscar infos, mostra modal simples
+                const title = mode === 'Reverse' ? 'Confirmar Reversão' : 'Confirmar Organização';
+                const details = `<strong>Pasta:</strong> ${path}<br><strong>Modo:</strong> ${mode}`;
+                showConfirmModal(title, 'Deseja prosseguir?', details, () => executeAction(mode));
+            }
+        } else {
+            const title = mode === 'Reverse' ? 'Confirmar Reversão' : 'Confirmar Organização';
+            const details = `<strong>Pasta:</strong> ${path}<br><strong>Modo:</strong> ${mode}`;
+            showConfirmModal(title, 'Deseja prosseguir?', details, () => executeAction(mode));
+        }
+    } else {
+        executeAction(mode);
+    }
+}
+
+async function executeAction(mode) {
+    const path = document.getElementById('global-path')?.value.trim();
+    if(!path) { toast('Informe o caminho da pasta', 'error'); return; }
+    const out = document.getElementById(mode==='Report' ? 'report-output' : 'organizar-output');
+    if (!out) { toast('Erro interno', 'error'); return; }
+    out.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Executando...</div>';
+    if(electronAvailable) {
+        try {
+            const criarExtras = document.getElementById(mode==='Auto'?'org-extras':'manual-extras')?.checked || false;
+            const deletarRelatorios = document.getElementById('reverse-delete-reports')?.checked || false;
+            let result;
+            if(mode==='Auto'||mode==='Manual') {
+                // Rust organiza os arquivos (rápido, sem extrair durações)
+                result = await invokeRust('organizarArquivos', { caminho: path, modo: mode.toLowerCase(), criarExtras });
+                // JS gera o relatório com durações (método rápido via <video preload="metadata">)
+                try {
+                    const videos = await invokeRust('listarVideos', { caminho: path });
+                    const grupos = await invokeRust('agruparPorAula', { videos });
+                    updatePathStats(videos, grupos);
+                    await generateReportInBrowser(path, grupos, out);
+                    result = null; // Resultado já exibido pelo generateReportInBrowser
+                } catch(e) {
+                    console.log('Erro ao gerar relatório:', e);
+                    // Se falhar, exibe pelo menos o resultado do Rust
+                    out.innerHTML = '<div style="color:var(--success);font-weight:700;margin-bottom:1rem">✓ Concluído!</div><div class="terminal-output">' + escapeHtml(String(result)) + '</div>';
+                }
+            } else if(mode==='Reverse') {
+                result = await invokeRust('reverterOrganizacao', { caminho: path, deletarRelatorios });
+            } else if(mode==='Report') {
+                // Modo Report: usa o método rápido do JavaScript
+                try {
+                    out.innerHTML = '<div class="loading"><div class="loading-spinner"></div>Gerando relatório...</div>';
+                    const videos = await invokeRust('listarVideos', { caminho: path });
+                    if (!videos || videos.length === 0) throw new Error('Nenhum vídeo encontrado no caminho: ' + path);
+                    const grupos = await invokeRust('agruparPorAula', { videos });
+                    await generateReportInBrowser(path, grupos, out);
+                    result = null; // Resultado já exibido pelo generateReportInBrowser
+                } catch(e) {
+                    result = null;
+                    out.innerHTML = '<div style="color:var(--danger)">ERRO: ' + escapeHtml(String(e)) + '</div>';
+                    toast('Erro ao gerar relatório', 'error');
+                }
+            }
+            // Exibe resultado para Auto/Manual/Reverse
+            if (result !== null && mode !== 'Report') {
+                out.innerHTML = '<div style="color:var(--success);font-weight:700;margin-bottom:1rem">✓ Concluído!</div><div class="terminal-output">' + escapeHtml(String(result || 'Operação concluída.')) + '</div>';
+            }
+            toast(mode + ' concluído!', 'success');
+        } catch(e) {
+            out.innerHTML = '<div style="color:var(--danger)">ERRO: ' + e + '</div>';
+            toast('Erro na execução', 'error');
+        }
+    } else {
+        out.innerHTML = '<div style="color:var(--warning)">Modo preview: Backend não disponível.</div>';
+    }
+}
+
+// ============ EMAIL ============
+function generateEmail() {
+    // Lê dos campos da div principal de caminho (agora editáveis)
+    const e = document.getElementById('ext-curso')?.value || document.getElementById('email-entrada')?.value || '[Entrada]';
+    const s = document.getElementById('ext-sigla')?.value || document.getElementById('email-sigla')?.value || '[Sigla]';
+    const f = document.getElementById('ext-fase')?.value || document.getElementById('email-fase')?.value || '[Fase]';
+    const m = document.getElementById('ext-materia')?.value || document.getElementById('email-materia')?.value || '[Matéria]';
+    const t = document.getElementById('email-tipo')?.value || 'varios';
+    let subject = '[POSTECH] ' + e + ' - ' + s + ' - ' + f + ' - ' + m + ' - [VÍDEOS LIBERADOS]';
+    let body = 'Olá, pessoal!\n\nOs vídeos da disciplina de "' + m + '" (da "' + f + '" do curso de "' + s + '") foram finalizados.\nOs mesmos já foram cadastrados na plataforma e os links encontram-se na planilha.\n\nObrigada!';
+    if(t==='boasVindas') { subject='[POSTECH] '+e+' - '+s+' - '+f+' - Boas Vindas - [VÍDEO LIBERADO]'; body='Olá, pessoal!\n\nO vídeo de "Boas Vindas" (da "'+f+'" do curso de "'+s+'") foi finalizado.\nO mesmo já foi cadastrado na plataforma e o link encontra-se na planilha.\n\nObrigada!'; }
+    else if(t==='onboarding') { subject='[POSTECH] '+e+' - '+s+' - Onboarding - [VÍDEO LIBERADO]'; body='Olá, pessoal!\n\nO vídeo de "Onboarding" do curso de "'+s+'" foi finalizado.\nO mesmo já foi cadastrado na plataforma e o link encontra-se na planilha.\n\nObrigada!'; }
+    else if(t==='extra') { subject='[POSTECH] '+s+' - Material Extra - [VÍDEO LIBERADO]'; body='Olá, pessoal!\n\nO vídeo extra foi finalizado.\nO mesmo já foi cadastrado na plataforma e o link encontra-se na planilha.\n\nObrigada!'; }
+    // Renderiza o Assunto com colchetes (sem negrito)
+    document.getElementById('email-subject-preview').innerHTML = subject;
+    // Renderiza o Corpo com negrito nos trechos de variáveis (entre aspas no template)
+    let bodyHtml = body.replace(/\\n/g, '<br>');
+    // Os trechos que são variáveis no template aparecem entre aspas — coloca negrito neles
+    bodyHtml = bodyHtml.replace(/"([^"]+)"/g, '<b class="email-tag">"$1"</b>');
+    document.getElementById('email-body-preview').innerHTML = bodyHtml;
+}
+
+function copySubject() {
+    const el = document.getElementById('email-subject-preview');
+    // Copia como HTML para manter negrito
+    const html = el.innerHTML;
+    const text = el.innerText || el.textContent;
+    copyHtmlToClipboard(html, text);
+}
+
+function copyBody() {
+    const el = document.getElementById('email-body-preview');
+    // Copia como HTML para manter negrito
+    const html = el.innerHTML;
+    const text = el.innerText || el.textContent;
+    copyHtmlToClipboard(html, text);
+}
+
+function copyHtmlToClipboard(html, text) {
+    if(electronAvailable && window.electronAPI.clipboardWriteHtml) {
+        window.electronAPI.clipboardWriteHtml(html, text).then(() => {
+            toast('Copiado!', 'success');
+        }).catch(() => {
+            fallbackCopyText(text);
+        });
+    } else {
+        fallbackCopyText(text);
+    }
+}
+
+async function copyToClipboard(text) {
+    console.log('[DEBUG] copyToClipboard chamado, texto length:', text.length);
+    // Usa clipboard do Electron via IPC (funciona em Windows, macOS e Linux)
+    if(electronAvailable) {
+        try {
+            console.log('[DEBUG] Tentando clipboard via Electron...');
+            const result = await window.electronAPI.clipboardWrite(text);
+            console.log('[DEBUG] Clipboard via Electron sucesso:', result);
+            toast('Copiado!', 'success');
+            return;
+        } catch(e) {
+            console.log('[DEBUG] Clipboard via Electron falhou:', e);
+        }
+    }
+    // Fallback: navigator.clipboard
+    try {
+        console.log('[DEBUG] Tentando navigator.clipboard...');
+        await navigator.clipboard.writeText(text);
+        toast('Copiado!', 'success');
+    } catch(e) {
+        console.log('[DEBUG] navigator.clipboard falhou:', e);
+        // Último fallback: textarea + execCommand
+        try {
+            const ta = document.createElement('textarea');
+            ta.value = text;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            toast('Copiado!', 'success');
+        } catch(e2) {
+            toast('Erro ao copiar: ' + e2.message, 'error');
+        }
+    }
+}
+
+// ============ MODAL DE CONFIRMAÇÃO ============
+var pendingAction = null;
+
+function showConfirmModal(title, message, details, action) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-message').textContent = message;
+    document.getElementById('modal-details').innerHTML = details || '';
+    pendingAction = action;
+    document.getElementById('confirm-modal').classList.add('active');
+}
+
+function closeModal() {
+    document.getElementById('confirm-modal').classList.remove('active');
+    pendingAction = null;
+}
+
+function confirmModal() {
+    if (pendingAction) {
+        pendingAction();
+    }
+    closeModal();
+}
+
+// ============ PLANILHA ============
+async function generatePlanilha() {
+    const path = document.getElementById('global-path').value.trim();
+    if(!path) { toast('Informe o caminho da pasta', 'error'); return; }
+    const out = document.getElementById('excel-output');
+    out.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Gerando planilha...</div>';
+    if(electronAvailable) {
+        try {
+            const videos = await invokeRust('listarVideos', { caminho: path });
+            const grupos = await invokeRust('agruparPorAula', { videos });
+            const titulosRaw = document.getElementById('excel-titles').value;
+            const titulos = titulosRaw.split('\n').map(t=>t.trim()).filter(t=>t);
+            // Gerar CSV
+            await invokeRust('gerarCsv', { caminho: path, grupos, titulos });
+            // Renderizar tabela
+            renderTable(grupos, titulos);
+            document.getElementById('btn-copy-table').style.display = 'inline-flex';
+            document.getElementById('btn-download-csv').style.display = 'inline-flex';
+            toast('Planilha gerada!', 'success');
+        } catch(e) {
+            out.innerHTML = '<div style="color:var(--danger)">ERRO: ' + e + '</div>';
+        }
+    } else {
+        out.innerHTML = '<div style="color:var(--warning)">Modo preview: Backend não disponível.</div>';
+    }
+}
+
+function renderTable(grupos, titulos) {
+    const out = document.getElementById('excel-output');
+    let html = '<table class="excel-table"><thead><tr><th>Aula</th><th>Vídeo</th></tr></thead><tbody>';
+    for(const g of grupos) {
+        const titulo = titulos[g.numero-1] || ('Aula '+g.numero);
+        for(let i=0;i<g.videos.length;i++) {
+            html += '<tr>';
+            if(i===0) html += '<td class="lesson-cell" rowspan="'+g.videos.length+'">'+titulo+'</td>';
+            // Limpa o nome do vídeo (igual ao copyTable)
+            var nomeLimpo = g.videos[i].replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+            html += '<td>'+nomeLimpo+'</td></tr>';
+        }
+    }
+    html += '</tbody></table>';
+    out.innerHTML = html;
+}
+
+function copyTable() {
+    const table = document.getElementById('excel-output').querySelector('table');
+    if(!table) { toast('Gere a planilha primeiro', 'error'); return; }
+
+    // Gera HTML com rowspan, sem cabeçalhos, com nomes limpos
+    let html = '<table>';
+    const rows = table.querySelectorAll('tr');
+    let isFirstRow = true;
+    for(const row of rows) {
+        // Pula a linha de cabeçalho (th)
+        if(isFirstRow && row.querySelector('th')) {
+            isFirstRow = false;
+            continue;
+        }
+        isFirstRow = false;
+        html += '<tr>';
+        const cells = row.querySelectorAll('td');
+        for(const cell of cells) {
+            const rowspan = cell.getAttribute('rowspan') || '';
+            const style = 'style="border:1px solid #ccc;padding:4px 8px;"';
+            // Limpa o nome do vídeo: remove extensão, versão, e prefixo "Aula X/"
+            let text = cell.textContent.trim();
+            text = cleanVideoName(text);
+            if(rowspan) {
+                html += `<td ${style} rowspan="${rowspan}">${text}</td>`;
+            } else {
+                html += `<td ${style}>${text}</td>`;
+            }
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+
+    console.log('[DEBUG] copyTable: HTML gerado, length:', html.length);
+
+    // Copia como HTML usando clipboard API do Electron
+    if(electronAvailable && window.electronAPI.clipboardWriteHtml) {
+        window.electronAPI.clipboardWriteHtml(html).then(() => {
+            toast('Tabela copiada! Cole no Google Sheets com Ctrl+V', 'success');
+        }).catch((e) => {
+            console.log('[DEBUG] clipboardWriteHtml falhou:', e);
+            fallbackCopyText(html);
+        });
+    } else {
+        fallbackCopyText(html);
+    }
+}
+
+function cleanVideoName(nome) {
+    // Remove prefixo "Aula X/"
+    nome = nome.replace(/^Aula\s+\d+\//, '');
+    // Remove extensão
+    const dotIdx = nome.lastIndexOf('.');
+    if(dotIdx > 0) nome = nome.substring(0, dotIdx);
+    // Remove sufixo de versão como " - V1", " - v2", etc.
+    nome = nome.replace(/[\s_-]+[Vv]_?\d+\s*$/, '');
+    // Remove números soltos no final
+    nome = nome.replace(/[\s_-]+\d+\s*$/, '');
+    return nome.trim();
+}
+
+function fallbackCopyText(text) {
+    try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        toast('Tabela copiada!', 'success');
+    } catch(e) {
+        toast('Erro ao copiar: ' + e.message, 'error');
+    }
+}
+
+function downloadCSV() {
+    toast('Use o botão CSV na barra de ações', 'info');
+}
+
+// ============ UTILS ============
+function escapeHtml(s) { if(!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ============ INIT ============
+initAPI();
+
+</script>
+
+<!-- Modal CSS -->
+<style>
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;justify-content:center;align-items:center}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:500px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.modal-header h3{color:var(--primary);font-size:var(--fs-xl);margin-bottom:1rem}
+.modal-body{margin-bottom:1.5rem}
+.modal-body p{color:var(--text);line-height:1.6;margin-bottom:.8rem}
+.modal-details{background:var(--surface-dark);border-radius:8px;padding:1rem;font-family:var(--mono);font-size:var(--fs-sm);color:var(--text-dim);max-height:200px;overflow-y:auto}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end}
+.btn-secondary{background:var(--surface-dark);color:var(--text);border:1px solid var(--border)}
+.btn-secondary:hover{border-color:var(--text-dim)}
+</style>
+
+<!-- ============ GERAÇÃO DE RELATÓRIO NO NAVEGADOR ============ -->
+<script>
+async function generateReportInBrowser(path, grupos, out) {
+    var video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    video.style.display = 'none';
+    document.body.appendChild(video);
+
+    var fmtDuration = function(secs) {
+        var h = Math.floor(secs / 3600);
+        var m = Math.floor((secs % 3600) / 60);
+        var s = Math.floor(secs % 60);
+        return ('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+    };
+
+    var getDuration = function(filePath) {
+        return new Promise(function(resolve) {
+            video.src = 'file:///' + filePath.replace(/\\/g, '/');
+            video.onloadedmetadata = function() {
+                resolve(video.duration || 0);
+                video.removeAttribute('src');
+            };
+            video.onerror = function() { resolve(0); video.removeAttribute('src'); };
+            setTimeout(function() { resolve(0); }, 5000);
+        });
+    };
+
+    try {
+        // Mostra progresso
+        out.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Calculando duracoes dos videos...</div>';
+        
+        // Detecta se há subpastas com vídeos (organização) ou se tudo está na raiz
+        var hasSubpastas = false;
+        for (var i = 0; i < grupos.length; i++) {
+            for (var j = 0; j < grupos[i].videos.length; j++) {
+                if (grupos[i].videos[j].indexOf('/') !== -1 || grupos[i].videos[j].indexOf('\\') !== -1) {
+                    hasSubpastas = true;
+                    break;
+                }
+            }
+            if (hasSubpastas) break;
+        }
+
+        var relatorio = 'RELATORIO DE ORGANIZACAO\n';
+        relatorio += 'Destino: ' + path + '\n';
+        relatorio += 'Data: ' + new Date().toLocaleString() + '\n';
+        relatorio += '============================================================\n';
+
+        if (hasSubpastas) {
+            // Modo organizado: mostra estrutura de pastas
+            relatorio += 'ESTRUTURA DE PASTAS:\n';
+            for (var i = 0; i < grupos.length; i++) {
+                var g = grupos[i];
+                relatorio += '  ' + g.titulo + ' - ' + path + '\\' + g.titulo + '\\\n';
+            }
+        } else {
+            // Modo desorganizado: mostra pasta raiz
+            relatorio += 'ESTRUTURA DE PASTAS:\n';
+            relatorio += '  [Pasta Raiz] ' + path + '\\\n';
+        }
+
+        relatorio += '============================================================\n';
+        relatorio += 'TODOS OS VIDEOS:\n\n';
+        var totalDuration = 0;
+        var durationsByGroup = {};
+        for (var i = 0; i < grupos.length; i++) {
+            var g = grupos[i];
+            var groupDuration = 0;
+            for (var j = 0; j < g.videos.length; j++) {
+                var videoPath = g.videos[j];
+                var fullPath = path + '\\' + videoPath;
+                var dur = await getDuration(fullPath);
+                groupDuration += dur;
+                totalDuration += dur;
+                var nomeLimpo = videoPath.replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+                if (hasSubpastas) {
+                    relatorio += '[' + g.titulo + '] ' + nomeLimpo + '\n';
+                } else {
+                    relatorio += nomeLimpo + '\n';
+                }
+                relatorio += '  Duracao: ' + fmtDuration(dur) + '\n';
+                relatorio += '  Caminho: ' + fullPath + '\n\n';
+            }
+            durationsByGroup[g.titulo] = groupDuration;
+        }
+        relatorio += '============================================================\n';
+        relatorio += 'DURACAO POR PASTA:\n';
+        for (var i = 0; i < grupos.length; i++) {
+            var g = grupos[i];
+            var dur = durationsByGroup[g.titulo] || 0;
+            relatorio += '  [' + g.titulo + '] ' + fmtDuration(dur) + ' (' + (dur/60).toFixed(2) + ' min)\n';
+        }
+        relatorio += '\n============================================================\n';
+        relatorio += 'RESUMO DE DURACAO TOTAL:\n';
+        relatorio += '  Tempo Total: ' + fmtDuration(totalDuration) + '\n';
+        relatorio += '  Equivalente a: ' + (totalDuration/60).toFixed(2) + ' minutos\n';
+        relatorio += '============================================================\n';
+        await invokeRust('salvarRelatorio', { caminho: path, conteudo: relatorio });
+
+        // Se opção de HTML estiver ativa, gera relatório HTML bonito
+        if (document.getElementById('cfg-report-html')?.checked) {
+            try {
+                const htmlReport = generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSubpastas);
+                const htmlPath = path + '\\Relatorio_Organizacao.html';
+                await invokeRust('salvarRelatorioHtml', { caminho: path, conteudo: htmlReport });
+                console.log('[Relatório HTML] Salvo em:', htmlPath);
+            } catch(e) { console.log('Erro ao gerar relatório HTML:', e); }
+        }
+
+        // Monta HTML do output
+        let reportHtml = '<div style="color:var(--success);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:12px">';
+        reportHtml += '📄 Relatório gerado!';
+        reportHtml += '<button class="btn btn-sm btn-secondary" onclick="copyReportText()">📋 Copiar Relatório</button>';
+        reportHtml += '<button class="btn btn-sm btn-secondary" onclick="openReportFile()">📄 Abrir Relatório</button>';
+        reportHtml += '<button class="btn btn-sm btn-secondary" onclick="openReportFolder()">📁 Abrir Caminho</button>';
+        reportHtml += '</div>';
+
+        // Stats
+        reportHtml += '<div style="margin-bottom:1rem">';
+        reportHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
+        reportHtml += '<div style="padding:.4rem .8rem;background:var(--surface-dark);border-radius:6px;font-size:var(--fs-sm)"><strong style="color:var(--primary)">' + grupos.length + '</strong> aulas</div>';
+        reportHtml += '<div style="padding:.4rem .8rem;background:var(--surface-dark);border-radius:6px;font-size:var(--fs-sm)"><strong style="color:var(--primary)">' + fmtDuration(totalDuration) + '</strong> total</div>';
+        reportHtml += '<div style="padding:.4rem .8rem;background:var(--surface-dark);border-radius:6px;font-size:var(--fs-sm)"><strong style="color:var(--primary)">' + (totalDuration/60).toFixed(1) + ' min</strong></div>';
+        reportHtml += '</div></div>';
+
+        // Campo de texto do relatório
+        reportHtml += '<div class="terminal-output">' + escapeHtml(relatorio) + '</div>';
+
+        // Caminhos das Aulas (depois do relatório)
+        if (hasSubpastas && grupos.length > 0) {
+            reportHtml += '<div style="margin-top:1.5rem;padding:1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">';
+            reportHtml += '<div style="font-weight:600;color:var(--primary);margin-bottom:8px">📂 Caminhos das Aulas</div>';
+            for (var i = 0; i < grupos.length; i++) {
+                var g = grupos[i];
+                var aulaPath = path + '\\\\' + g.titulo;
+                reportHtml += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">';
+                reportHtml += '<span style="font-size:var(--fs-sm);color:var(--text-dim);min-width:80px">' + g.titulo + '</span>';
+                reportHtml += '<input type="text" value="' + aulaPath + '" readonly style="flex:1;padding:.3rem .5rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:var(--fs-sm)" id="aula-path-' + i + '">';
+                reportHtml += '<button class="btn btn-sm btn-copy" onclick="copyAulaPath(' + i + ')" title="Copiar">📋</button>';
+                reportHtml += '</div>';
+            }
+            reportHtml += '</div>';
+        }
+
+        out.innerHTML = reportHtml;
+
+        // Atualiza stats na div de caminho
+        updatePathDurations(durationsByGroup, totalDuration);
+
+        // Salva referência para os botões
+        window.__lastReportPath = path;
+    } catch(e) {
+        console.log('Erro ao gerar relatório:', e);
+    } finally {
+        video.remove();
+    }
+}
+
+function generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSubpastas) {
+    var fmtDuration = function(secs) {
+        var h = Math.floor(secs / 3600);
+        var m = Math.floor((secs % 3600) / 60);
+        var s = Math.floor(secs % 60);
+        return ('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+    };
+    var now = new Date().toLocaleString();
+    var totalMins = (totalDuration/60).toFixed(1);
+    
+    // Cores POSTECH Escuro
+    var html = '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Relatorio de Organizacao</title>';
+    html += '<style>';
+    html += ':root{--primary:#75c4b9;--primary-dark:#5aa896;--bg:#111111;--surface:#222222;--surface-dark:#1a1a1a;--border:#333333;--header-bg:#000000;--text:#ffffff;--text-dim:#999999;--success:#4caf50;--danger:#f44336;--warning:#ff9800}';
+    html += '*{margin:0;padding:0;box-sizing:border-box}';
+    html += 'body{font-family:Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;padding:2rem;max-width:900px;margin:0 auto}';
+    html += 'h1{color:var(--primary);font-size:1.5rem;margin-bottom:.5rem;border-bottom:2px solid var(--primary);padding-bottom:.5rem}';
+    html += 'h2{color:var(--primary);font-size:1.1rem;margin:1.5rem 0 .5rem}';
+    html += 'h3{color:var(--primary-dark);font-size:.95rem;margin-bottom:.5rem}';
+    html += '.meta{color:var(--text-dim);font-size:.85rem;margin-bottom:1.5rem}';
+    html += '.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem}';
+    html += '.stat{display:inline-block;background:var(--surface-dark);border:1px solid var(--border);border-radius:6px;padding:.4rem .8rem;margin:4px;font-size:.85rem}';
+    html += '.stat strong{color:var(--primary)}';
+    html += 'table{width:100%;border-collapse:collapse;margin:.5rem 0}';
+    html += 'th,td{padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);font-size:.85rem}';
+    html += 'th{color:var(--text-dim);font-weight:600;background:var(--surface-dark)}';
+    html += 'tr:hover{background:var(--surface-dark)}';
+    html += '.badge{display:inline-block;background:var(--primary);color:#000;border-radius:4px;padding:2px 8px;font-size:.75rem;font-weight:600}';
+    html += '.copy-btn{background:var(--surface-dark);border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 10px;cursor:pointer;font-size:.75rem;margin-left:4px;transition:all .2s}';
+    html += '.copy-btn:hover{background:var(--border);color:var(--primary)}';
+    html += '.copy-btn.copied{background:var(--success);border-color:var(--success);color:#fff}';
+    html += '.path-field{display:flex;align-items:center;gap:6px;margin-bottom:4px}';
+    html += '.path-field input{flex:1;padding:.3rem .5rem;background:var(--surface-dark);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:Consolas,monospace;font-size:.8rem}';
+    html += '.dur-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}';
+    html += '.dur-val{background:var(--surface-dark);border:1px solid var(--border);border-radius:4px;padding:.3rem .6rem;font-family:Consolas;font-size:.85rem;color:var(--primary)}';
+    html += '.dur-val.copied{outline:2px solid var(--success);outline-offset:1px}';
+    html += '.footer{margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--text-dim);font-size:.75rem;text-align:center}';
+    html += '.tree{padding-left:1rem;border-left:2px solid var(--border);margin-left:.5rem}';
+    html += '.tree-item{padding:.2rem 0;font-size:.85rem;color:var(--text-dim)}';
+    html += '.tree-item strong{color:var(--text)}';
+    html += '.toggle-btn{background:var(--surface-dark);border:1px solid var(--border);color:var(--primary);border-radius:4px;padding:2px 8px;cursor:pointer;font-size:.75rem;margin-left:4px}';
+    html += '.toggle-btn:hover{background:var(--border)}';
+    html += '.hidden{display:none}';
+    html += '</style></head><body>';
+    
+    // Título
+    html += '<h1>Relatorio de Organizacao</h1>';
+    html += '<div class="meta">Pasta: ' + path + '<br>Data: ' + now + '</div>';
+    
+    // Resumo
+    html += '<div class="card"><h3>Resumo</h3>';
+    html += '<span class="stat"><strong>' + grupos.length + '</strong> aulas</span>';
+    html += '<span class="stat"><strong>' + fmtDuration(totalDuration) + '</strong> duracao total</span>';
+    html += '<span class="stat"><strong>' + totalMins + ' min</strong></span></div>';
+    
+    // Estrutura de pastas (expansível)
+    html += '<h2>Estrutura de Pastas</h2><div class="card">';
+    html += '<button class="toggle-btn" onclick="toggleTree(this)">Expandir Tudo</button>';
+    html += '<div class="tree" id="tree-root">';
+    for (var i = 0; i < grupos.length; i++) {
+        var g = grupos[i];
+        var aulaPath = path + '\\' + g.titulo;
+        html += '<div><strong>' + g.titulo + '/</strong> <span style="color:var(--text-dim);font-size:.75rem">(' + g.videos.length + ' videos)</span>';
+        html += '<button class="copy-btn" onclick="copyHtmlPath(this,\'' + aulaPath.replace(/'/g, "\\'") + '\')">Copiar</button>';
+        html += '<div class="tree-item hidden">';
+        for (var j = 0; j < g.videos.length; j++) {
+            var vp = g.videos[j];
+            var nome = vp.replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+            html += '<div>' + nome + '</div>';
+        }
+        html += '</div></div>';
+    }
+    html += '</div></div>';
+    
+    // Duração por aula (com botões de copiar e highlight persistente)
+    html += '<h2>Duracao por Aula</h2><div class="card">';
+    for (var i = 0; i < grupos.length; i++) {
+        var g = grupos[i];
+        var dur = durationsByGroup[g.titulo] || 0;
+        var durMins = (dur/60).toFixed(2);
+        html += '<div class="dur-row">';
+        html += '<strong style="min-width:100px">' + g.titulo + '</strong>';
+        html += '<span class="dur-val" id="dur-hhmmss-' + i + '">' + fmtDuration(dur) + '</span>';
+        html += '<button class="copy-btn" onclick="copyHtmlDur(this,\'' + fmtDuration(dur) + '\',' + i + ',1)">Copiar</button>';
+        html += '<span class="dur-val" id="dur-min-' + i + '">' + durMins + ' min</span>';
+        html += '<button class="copy-btn" onclick="copyHtmlDur(this,\'' + durMins + ' min\',' + i + ',2)">Copiar</button>';
+        html += '</div>';
+    }
+    // Total
+    html += '<div class="dur-row" style="border-top:1px solid var(--border);padding-top:.5rem;margin-top:.5rem">';
+    html += '<strong style="min-width:100px">TOTAL</strong>';
+    html += '<span class="dur-val" id="dur-hhmmss-total">' + fmtDuration(totalDuration) + '</span>';
+    html += '<button class="copy-btn" onclick="copyHtmlDur(this,\'' + fmtDuration(totalDuration) + '\',-1,1)">Copiar</button>';
+    html += '<span class="dur-val" id="dur-min-total">' + totalMins + ' min</span>';
+    html += '<button class="copy-btn" onclick="copyHtmlDur(this,\'' + totalMins + ' min\',-1,2)">Copiar</button>';
+    html += '</div>';
+    html += '</div>';
+    
+    // Vídeos por aula (com botões de copiar caminho)
+    html += '<h2>Videos por Aula</h2>';
+    for (var i = 0; i < grupos.length; i++) {
+        var g = grupos[i];
+        html += '<div class="card"><h3>' + g.titulo + ' <span class="badge">' + g.videos.length + ' videos</span></h3>';
+        html += '<table><tr><th>#</th><th>Nome</th><th>Caminho</th><th>Copiar</th></tr>';
+        for (var j = 0; j < g.videos.length; j++) {
+            var vp = g.videos[j];
+            var nomeLimpo = vp.replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+            var fullPath = path + '\\' + vp;
+            html += '<tr><td>' + (j+1) + '</td><td>' + nomeLimpo + '</td>';
+            html += '<td style="font-family:Consolas;font-size:.75rem;color:var(--text-dim)">' + fullPath + '</td>';
+            html += '<td><button class="copy-btn" onclick="copyHtmlPath(this,\'' + fullPath.replace(/'/g, "\\'") + '\')">Copiar</button></td></tr>';
+        }
+        html += '</table></div>';
+    }
+    
+    html += '<div class="footer">Gerado pelo Organizador POSTECH v' + APP_VERSION + ' • ' + now + '</div>';
+    
+    // JavaScript inline para o HTML
+    html += '<script>';
+    html += 'function copyHtmlPath(btn,text){';
+    html += 'navigator.clipboard.writeText(text).then(function(){';
+    html += 'btn.textContent="Copiado!";btn.classList.add("copied");';
+    html += 'setTimeout(function(){btn.textContent="Copiar";btn.classList.remove("copied")},2000)';
+    html += '})';
+    html += '}';
+    html += 'function copyHtmlDur(btn,text,idx,type){';
+    html += 'navigator.clipboard.writeText(text).then(function(){';
+    html += 'btn.textContent="Copiado!";btn.classList.add("copied");';
+    html += 'var el=document.getElementById(type===1?"dur-hhmmss-"+idx:"dur-min-"+idx);';
+    html += 'if(el){el.classList.add("copied");el.dataset.copied="true"}';
+    html += 'setTimeout(function(){btn.textContent="Copiar";btn.classList.remove("copied")},2000)';
+    html += '})';
+    html += '}';
+    html += 'function toggleTree(btn){';
+    html += 'var items=document.querySelectorAll(".tree-item");';
+    html += 'var allHidden=true;';
+    html += 'items.forEach(function(el){if(!el.classList.contains("hidden"))allHidden=false});';
+    html += 'if(allHidden){items.forEach(function(el){el.classList.remove("hidden")});btn.textContent="Colapsar Tudo"}';
+    html += 'else{items.forEach(function(el){el.classList.add("hidden")});btn.textContent="Expandir Tudo"}';
+    html += '}';
+    html += '<\/script>';
+    html += '</body></html>';
+    return html;
+}
+
+function copyAulaPath(idx) {
+    const el = document.getElementById('aula-path-' + idx);
+    if (!el) return;
+    copyText(el.value);
+    // Highlight persistente (só remove ao reiniciar ou mudar caminho)
+    el.style.outline = '2px solid var(--success)';
+    el.style.outlineOffset = '1px';
+    el.style.borderRadius = '4px';
+    el.dataset.copied = 'true';
+}
+
+function openReportFile() {
+    const path = window.__lastReportPath || document.getElementById('global-path')?.value.trim();
+    if (!path) { toast('Nenhum caminho disponível', 'error'); return; }
+    if (electronAvailable && window.electronAPI?.openPath) {
+        // Tenta abrir o relatório mais recente
+        invokeRust('listarArquivos', { caminho: path, padrao: '*.txt' }).then(files => {
+            if (files && files.length > 0) {
+                const reportFile = files.sort().reverse()[0];
+                window.electronAPI.openPath(path + '\\' + reportFile);
+            } else {
+                toast('Nenhum relatório .txt encontrado na pasta', 'error');
+            }
+        }).catch(() => {
+            toast('Erro ao buscar relatório', 'error');
+        });
+    } else {
+        toast('Abrir relatório: ' + path, 'info');
+    }
+}
+
+function openReportFolder() {
+    const path = window.__lastReportPath || document.getElementById('global-path')?.value.trim();
+    if (!path) { toast('Nenhum caminho disponível', 'error'); return; }
+    if (electronAvailable && window.electronAPI?.openPath) {
+        window.electronAPI.openPath(path);
+    } else {
+        toast('Abrir pasta: ' + path, 'info');
+    }
+}
+
+// ============ FEEDBACK / GITHUB ISSUES ============
+
+function getSystemInfo() {
+    var info = 'Versão: ' + APP_VERSION;
+    info += ' | Plataforma: ' + navigator.platform;
+    if (navigator.userAgent) {
+        var ua = navigator.userAgent;
+        if (ua.includes('Win')) info += ' | SO: Windows';
+        else if (ua.includes('Mac')) info += ' | SO: macOS';
+        else if (ua.includes('Linux')) info += ' | SO: Linux';
+    }
+    if (typeof process !== 'undefined' && process.versions) {
+        info += ' | Electron: ' + (process.versions.electron || '?');
+        info += ' | Node: ' + (process.versions.node || '?');
+    }
+    return info;
+}
+
+function submitFeedback() {
+    var type = document.getElementById('feedback-type')?.value || 'feedback';
+    var title = document.getElementById('feedback-title')?.value.trim();
+    var body = document.getElementById('feedback-body')?.value.trim();
+
+    if (!title) {
+        toast('Por favor, insira um título para o feedback', 'error');
+        return;
+    }
+    if (!body) {
+        toast('Por favor, insira uma descrição', 'error');
+        return;
+    }
+
+    var prefix = '';
+    if (type === 'bug') prefix = '[BUG] ';
+    else if (type === 'feature') prefix = '[FEATURE] ';
+    else prefix = '[FEEDBACK] ';
+
+    var fullTitle = prefix + title;
+    var fullBody = body + '\n\n---\n**Informações do sistema:**\n' + getSystemInfo();
+
+    var labels = type === 'bug' ? 'bug' : type === 'feature' ? 'enhancement' : 'feedback';
+
+    var url = 'https://github.com/' + GITHUB_REPO + '/issues/new'
+        + '?title=' + encodeURIComponent(fullTitle)
+        + '&body=' + encodeURIComponent(fullBody)
+        + '&labels=' + encodeURIComponent(labels);
+
+    if (electronAvailable && window.electronAPI?.openUrl) {
+        window.electronAPI.openUrl(url);
+    } else {
+        window.open(url, '_blank');
+    }
+}
+
+function initFeedbackForm() {
+    var el = document.getElementById('feedback-sysinfo');
+    if (el) el.textContent = getSystemInfo();
+}
+
+function copyReportText() {
+    const path = window.__lastReportPath || document.getElementById('global-path')?.value.trim();
+    if (!path) { toast('Nenhum relatório disponível', 'error'); return; }
+    invokeRust('lerRelatorio', { caminho: path }).then(function(conteudo) {
+        if (!conteudo) { toast('Nenhum relatório encontrado', 'error'); return; }
+        navigator.clipboard.writeText(conteudo).then(function() {
+            toast('Relatório copiado para a área de transferência!', 'success');
+        }).catch(function() {
+            // Fallback
+            var ta = document.createElement('textarea');
+            ta.value = conteudo;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            toast('Relatório copiado!', 'success');
+        });
+    }).catch(function() {
+        toast('Erro ao ler relatório', 'error');
+    });
+}
+
+// ============ PROJETOS ============
+function getProjectAutoName() {
+    const e = document.getElementById('email-entrada').value || '';
+    const s = document.getElementById('email-sigla').value || '';
+    const f = document.getElementById('email-fase').value || '';
+    const m = document.getElementById('email-materia').value || '';
+    const now = new Date();
+    const dateStr = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0');
+    const parts = [e, s, f, m].filter(p => p.trim());
+    if (parts.length === 0) return 'SemNome_' + dateStr;
+    return parts.join(' - ') + ' - ' + dateStr;
+}
+
+async function saveProject() {
+    if (!electronAvailable) { toast('Backend não disponível', 'error'); return; }
+    const path = document.getElementById('global-path').value.trim();
+    if (!path) { toast('Informe um caminho primeiro', 'error'); return; }
+    const nameInput = document.getElementById('project-name-input');
+    let name = nameInput.value.trim() || getProjectAutoName();
+    const projectData = {
+        caminho: path,
+        emailEntrada: document.getElementById('email-entrada').value,
+        emailSigla: document.getElementById('email-sigla').value,
+        emailFase: document.getElementById('email-fase').value,
+        emailMateria: document.getElementById('email-materia').value,
+        emailTipo: document.getElementById('email-tipo').value,
+        modoOrganizacao: document.querySelector('.nav-item.active[data-panel]')?.dataset.panel || 'panel-auto',
+        criadoEm: new Date().toISOString()
+    };
+    try {
+        const result = await invokeRust('salvarProjeto', { nome: name, dados: projectData });
+        toast('Projeto salvo!', 'success');
+        nameInput.value = '';
+        refreshProjects();
+    } catch(e) {
+        toast('Erro ao salvar: ' + e, 'error');
+    }
+}
+
+async function loadProject(nome) {
+    if (!electronAvailable) { toast('Backend não disponível', 'error'); return; }
+    try {
+        const result = await invokeRust('carregarProjeto', { nome });
+        // O Rust retorna { data: { ... } }
+        const dados = result.data || result;
+        
+        if (dados.caminho) {
+            document.getElementById('global-path').value = dados.caminho;
+        }
+        // Usa os campos da div principal de caminho (ext-*)
+        if (dados.emailEntrada) document.getElementById('ext-curso').value = dados.emailEntrada;
+        if (dados.emailSigla) document.getElementById('ext-sigla').value = dados.emailSigla;
+        if (dados.emailFase) document.getElementById('ext-fase').value = dados.emailFase;
+        if (dados.emailMateria) document.getElementById('ext-materia').value = dados.emailMateria;
+        if (dados.emailTipo) document.getElementById('email-tipo').value = dados.emailTipo;
+        
+        toast('Projeto carregado!', 'success');
+        
+        // Extrai informações do caminho e atualiza email
+        setTimeout(() => {
+            extractPathInfo();
+        }, 200);
+        
+        // Processa o caminho para extrair informações dos vídeos
+        if (dados.caminho) {
+            setTimeout(async () => {
+                try {
+                    const videos = await invokeRust('listarVideos', { caminho: dados.caminho });
+                    if (videos && videos.length > 0) {
+                        const grupos = await invokeRust('agruparPorAula', { videos });
+                        updatePathStats(videos, grupos);
+                        toast('Projeto carregado! ' + videos.length + ' vídeos encontrados.', 'success');
+                    }
+                } catch(e) {
+                    console.log('[LoadProject] Erro ao listar vídeos:', e);
+                }
+            }, 500);
+        }
+    } catch(e) {
+        toast('Erro ao carregar: ' + e, 'error');
+    }
+}
+
+async function deleteProject(nome) {
+    if (!electronAvailable) { toast('Backend não disponível', 'error'); return; }
+    if (!confirm('Deletar projeto "' + nome + '"?')) return;
+    try {
+        await invokeRust('deletarProjeto', { nome });
+        toast('Projeto deletado', 'success');
+        refreshProjects();
+    } catch(e) {
+        toast('Erro ao deletar: ' + e, 'error');
+    }
+}
+
+async function refreshProjects() {
+    if (!electronAvailable) return;
+    const listEl = document.getElementById('projects-list');
+    try {
+        const projetos = await invokeRust('listarProjetos');
+        if (!projetos || projetos.length === 0) {
+            listEl.innerHTML = '<div style="color:var(--text-dim);padding:2rem;text-align:center">Nenhum projeto salvo ainda.</div>';
+            return;
+        }
+        let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+        for (const p of projetos) {
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">';
+            html += '<div><div style="font-weight:600;color:var(--text);font-size:var(--fs-md)">' + escapeHtml(p) + '</div>';
+            const meta = projectMeta[p] || '';
+            if (meta) html += '<div style="font-size:var(--fs-xs);color:var(--text-dim);margin-top:2px">' + escapeHtml(meta) + '</div>';
+            html += '</div>';
+            html += '<div style="display:flex;gap:6px">';
+            html += '<button class="btn btn-sm btn-secondary" onclick="editProjectName(\'' + escapeHtml(p).replace(/'/g,"\\'") + '\', this)">✏️</button>';
+            html += '<button class="btn btn-sm btn-primary" onclick="loadProject(\'' + escapeHtml(p).replace(/'/g,"\\'") + '\')">📂 Carregar</button>';
+            html += '<button class="btn btn-sm" style="background:var(--danger)" onclick="deleteProject(\'' + escapeHtml(p).replace(/'/g,"\\'") + '\')">🗑</button>';
+            html += '</div></div>';
+        }
+        html += '</div>';
+        listEl.innerHTML = html;
+    } catch(e) {
+        listEl.innerHTML = '<div style="color:var(--danger);padding:1rem">Erro ao listar: ' + escapeHtml(e) + '</div>';
+    }
+}
+
+// Projeto metadata (para exibir info extra)
+let projectMeta = {};
+
+// ============ ATALHOS DE TECLADO (até 3 teclas) ============
+// Formato: { keys: ['Ctrl','Shift','A'], label: 'Ação' }
+// Modificadores aceitos: Ctrl, Shift, Alt, Meta
+// ============ DETECÇÃO DE PLATAFORMA ============
+function isMac() {
+    return navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+}
+
+// Retorna o modificador primário para a plataforma
+// Mac = Cmd (Meta), Win/Linux = Ctrl
+function primaryMod() {
+    return isMac() ? 'Meta' : 'Ctrl';
+}
+
+// Formata tecla para exibição
+function formatModKey(key) {
+    if (key === 'Meta' && isMac()) return '⌘';
+    if (key === 'Meta') return 'Meta';
+    if (key === 'Ctrl') return isMac() ? '⌃' : 'Ctrl';
+    return key;
+}
+
+// ============ ATALHOS DE TECLADO ============
+const defaultShortcuts = {
+    'nav_organizar': { keys: ['1'],           label: 'Organizar Arquivos' },
+    'nav_email':    { keys: ['2'],           label: 'Editor de Emails' },
+    'nav_excel':    { keys: ['3'],           label: 'Gerador de Planilhas' },
+    'nav_report':   { keys: ['4'],           label: 'Gerar Relatório' },
+    'nav_projects': { keys: ['5'],           label: 'Projetos' },
+    'nav_config':   { keys: ['6'],           label: 'Configurações' },
+    'nav_extras':   { keys: ['7'],           label: 'Extras' },
+    'nav_backup':   { keys: ['8'],           label: 'Backup / Restauração' },
+    'exec_auto':    { keys: [primaryMod(),'Enter'], label: 'Executar Automático' },
+    'exec_reverse': { keys: [primaryMod(),'R'],     label: 'Executar Reverso' },
+    'gen_excel':    { keys: [primaryMod(),'P'],     label: 'Gerar Planilha' },
+    'save_project': { keys: [primaryMod(),'S'],     label: 'Salvar Projeto' }
+};
+
+let shortcuts = JSON.parse(JSON.stringify(defaultShortcuts));
+
+const MODIFIERS = ['Control', 'Shift', 'Alt', 'Meta'];
+
+function executeShortcut(action) {
+    switch(action) {
+        case 'nav_organizar': showPanel('panel-organizar'); break;
+        case 'nav_email': showPanel('panel-email'); break;
+        case 'nav_excel': showPanel('panel-excel'); break;
+        case 'nav_report': showPanel('panel-report'); break;
+        case 'nav_projects': showPanel('panel-projects'); refreshProjects(); break;
+        case 'nav_config': showPanel('panel-config'); break;
+        case 'nav_extras': showPanel('panel-extras'); break;
+        case 'nav_backup': showPanel('panel-backup'); break;
+        case 'exec_auto': showPanel('panel-organizar'); setModoOrganizar('Auto'); runAction('Auto'); break;
+        case 'exec_reverse': showPanel('panel-organizar'); setModoOrganizar('Reverse'); runAction('Reverse'); break;
+        case 'gen_excel': showPanel('panel-excel'); generateExcel(); break;
+        case 'save_project': saveProject(); break;
+    }
+}
+
+function formatKeyCombo(keys) {
+    if (!keys || !Array.isArray(keys)) return '—';
+    return keys.map(k => {
+        return formatModKey(k);
+    }).join(' + ');
+}
+
+// Migra atalhos do formato antigo para o novo
+function migrateShortcuts(saved) {
+    const migrated = {};
+    for (const [action, sc] of Object.entries(saved)) {
+        if (sc.keys && Array.isArray(sc.keys)) {
+            migrated[action] = sc; // Já está no formato novo
+        } else if (sc.key) {
+            // Formato antigo: { key: '1', ctrl: false }
+            const keys = [];
+            if (sc.ctrl) keys.push('Ctrl');
+            keys.push(sc.key.charAt(0).toUpperCase() + sc.key.slice(1));
+            migrated[action] = { keys, label: defaultShortcuts[action]?.label || sc.label || action };
+        } else {
+            migrated[action] = defaultShortcuts[action] || sc;
+        }
+    }
+    return migrated;
+}
+
+function renderShortcutsEditor() {
+    const container = document.getElementById('shortcuts-editor');
+    if (!container) return;
+    const isMac = navigator.platform.includes('Mac');
+    const modOptions = isMac
+        ? ['', '⌘ Cmd', '⇧ Shift', '⌥ Alt', '⌃ Ctrl']
+        : ['', 'Ctrl', 'Shift', 'Alt'];
+    const modValues = isMac
+        ? ['', 'Meta', 'Shift', 'Alt', 'Ctrl']
+        : ['', 'Ctrl', 'Shift', 'Alt'];
+
+    let html = '<div style="display:flex;flex-direction:column;gap:8px">';
+    for (const [action, sc] of Object.entries(shortcuts)) {
+        const k = sc.keys || [];
+        // Separa modificadores da tecla principal
+        let selMod1 = '', selMod2 = '', mainKey = '';
+        for (const key of k) {
+            if (['Ctrl','Shift','Alt','Meta'].includes(key)) {
+                if (!selMod1) selMod1 = key;
+                else if (!selMod2) selMod2 = key;
+            } else {
+                mainKey = key;
+            }
+        }
+        // Dropdown de modificadores
+        let mod1Opts = '', mod2Opts = '';
+        for (let i = 0; i < modOptions.length; i++) {
+            const sel1 = selMod1 === modValues[i] ? 'selected' : '';
+            const sel2 = selMod2 === modValues[i] ? 'selected' : '';
+            mod1Opts += '<option value="' + modValues[i] + '" ' + sel1 + '>' + modOptions[i] + '</option>';
+            mod2Opts += '<option value="' + modValues[i] + '" ' + sel2 + '>' + modOptions[i] + '</option>';
+        }
+
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.6rem 1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">';
+        html += '<span style="font-size:var(--fs-md);color:var(--text)">' + escapeHtml(sc.label) + '</span>';
+        html += '<div style="display:flex;align-items:center;gap:4px">';
+        html += '<select data-action="' + action + '" data-field="mod1" onchange="updateShortcutSelect(this)" style="padding:.3rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-size:var(--fs-sm)">' + mod1Opts + '</select>';
+        html += '<span style="color:var(--text-dim)">+</span>';
+        html += '<select data-action="' + action + '" data-field="mod2" onchange="updateShortcutSelect(this)" style="padding:.3rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-size:var(--fs-sm)">' + mod2Opts + '</select>';
+        html += '<span style="color:var(--text-dim)">+</span>';
+        html += '<input type="text" value="' + mainKey + '" placeholder="Tecla" data-action="' + action + '" data-field="key" maxlength="10" style="width:60px;padding:.3rem;border:1px solid var(--border);border-radius:4px;background:var(--surface);color:var(--text);font-family:var(--mono);font-size:var(--fs-sm);text-align:center" onchange="updateShortcutSelect(this)">';
+        html += '</div></div>';
+    }
+    html += '</div>';
+    html += '<div style="margin-top:1rem;font-size:var(--fs-xs);color:var(--text-dim)">Selecione os modificadores e digite a tecla principal. Deixe em branco para atalhos sem modificadores (ex: 1-9).</div>';
+    html += '<div style="margin-top:1rem;display:flex;gap:10px"><button class="btn btn-sm btn-primary" onclick="saveShortcuts()">💾 Salvar Atalhos</button><button class="btn btn-sm btn-secondary" onclick="resetShortcuts()">🔄 Restaurar Padrão</button></div>';
+    container.innerHTML = html;
+}
+
+function updateShortcutSelect(el) {
+    const action = el.dataset.action;
+    const field = el.dataset.field;
+    const val = el.value.trim();
+    if (!shortcuts[action]) return;
+    if (!shortcuts[action].keys) shortcuts[action].keys = [];
+    // Reconstrói o array de chaves
+    const mod1 = el.closest('div').querySelector('[data-field="mod1"]').value;
+    const mod2 = el.closest('div').querySelector('[data-field="mod2"]').value;
+    const key = el.closest('div').querySelector('[data-field="key"]').value;
+    const keys = [];
+    if (mod1) keys.push(mod1);
+    if (mod2) keys.push(mod2);
+    if (key) keys.push(key);
+    shortcuts[action].keys = keys;
+    saveShortcuts();
+}
+
+function keysMatch(event, keyCombo) {
+    if (!keyCombo || keyCombo.length === 0) return false;
+    const expectedMods = keyCombo.filter(k => ['Ctrl','Shift','Alt','Meta'].includes(k));
+    const expectedKey = keyCombo.find(k => !['Ctrl','Shift','Alt','Meta'].includes(k));
+
+    // Verifica modificadores
+    const pressedMods = [];
+    if (event.ctrlKey) pressedMods.push('Ctrl');
+    if (event.shiftKey) pressedMods.push('Shift');
+    if (event.altKey) pressedMods.push('Alt');
+    if (event.metaKey) pressedMods.push('Meta');
+
+    if (pressedMods.length !== expectedMods.length) return false;
+    for (const m of expectedMods) {
+        if (!pressedMods.includes(m)) return false;
+    }
+
+    // Verifica tecla principal
+    if (expectedKey) {
+        // Se a tecla pressionada é um modificador, não é um match
+        if (['Control','Shift','Alt','Meta'].includes(event.key)) return false;
+        
+        const ek = expectedKey.toLowerCase();
+        const eventKey = event.key.toLowerCase();
+        
+        // Mapeia nomes especiais
+        const keyMap = {'space': ' ', 'enter': 'enter', 'escape': 'escape', 'tab': 'tab', 'backspace': 'backspace', 'delete': 'delete', 'arrowup': 'arrowup', 'arrowdown': 'arrowdown', 'arrowleft': 'arrowleft', 'arrowright': 'arrowright'};
+        const expected = keyMap[ek] || ek;
+        
+        // Compara direta
+        if (eventKey === expected) return true;
+        
+        // Se Shift está pressionado, o navegador pode retornar o caractere maiúsculo/símbolo
+        // Ex: Shift+1 = "!", Shift+2 = "@", etc.
+        // Mapeia símbolos para seus números
+        if (pressedMods.includes('Shift')) {
+            const shiftMap = {'!': '1', '@': '2', '#': '3', '$': '4', '%': '5', '&': '7', '*': '8', '(': '9', ')': '0'};
+            if (shiftMap[eventKey] === expected) return true;
+        }
+        
+        return false;
+    } else {
+        // Sem tecla principal esperada — só ativa se a tecla pressionada for um modificador
+        if (!['Control','Shift','Alt','Meta'].includes(event.key)) return false;
+    }
+
+    return true;
+}
+
+function isTextInputElement(el) {
+    if (!el) return false;
+    const tag = el.tagName.toLowerCase();
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+    if (el.isContentEditable) return true;
+    return false;
+}
+
+function setupKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+        // Ignora teclas modificadoras sozinhas (Shift, Ctrl, Alt, Meta)
+        if (['Control','Shift','Alt','Meta'].includes(e.key)) return;
+        
+        // Ignora se estiver em campo de texto (para atalhos sem modificadores)
+        const hasMod = e.ctrlKey || e.shiftKey || e.altKey || e.metaKey;
+        if (!hasMod && isTextInputElement(e.target)) return;
+
+        for (const [action, sc] of Object.entries(shortcuts)) {
+            if (keysMatch(e, sc.keys)) {
+                e.preventDefault();
+                e.stopPropagation();
+                executeShortcut(action);
+                return;
+            }
+        }
+    });
+}
+
+function saveShortcuts() {
+    localStorage.setItem('atalhos', JSON.stringify(shortcuts));
+    toast('Atalhos salvos!', 'success');
+}
+
+function resetShortcuts() {
+    shortcuts = JSON.parse(JSON.stringify(defaultShortcuts));
+    localStorage.removeItem('atalhos');
+    renderShortcutsEditor();
+    toast('Atalhos restaurados ao padrão', 'success');
+}
+
+// Atualiza tooltips do menu lateral quando atalhos mudam
+function updateNavTooltips() {
+    const navMap = {
+        'panel-auto': 'nav_auto', 'panel-manual': 'nav_manual', 'panel-reverse': 'nav_reverse',
+        'panel-email': 'nav_email', 'panel-excel': 'nav_excel', 'panel-report': 'nav_report',
+        'panel-projects': 'nav_projects', 'panel-config': 'nav_config', 'panel-extras': 'nav_extras'
+    };
+    for (const [panel, action] of Object.entries(navMap)) {
+        const el = document.querySelector('[data-panel="' + panel + '"]');
+        if (el && shortcuts[action]) {
+            el.title = 'Atalho: ' + formatKeyCombo(shortcuts[action].keys);
+        }
+    }
+}
+
+// ============ SALVAMENTO AUTOMÁTICO ============
+let autoSaveInterval = null;
+const AUTO_SAVE_TIMES = [0, 1, 5, 10, 15, 20]; // 0 = desligado
+
+function toggleConfigSection(id) {
+    var body = document.getElementById(id);
+    var header = body.previousElementSibling;
+    if (body.style.display === 'none') {
+        body.style.display = 'block';
+        header.classList.add('expanded');
+    } else {
+        body.style.display = 'none';
+        header.classList.remove('expanded');
+    }
+}
+
+function setupAutoSave() {
+    var cfg = buildConfig();
+    var minutos = cfg.auto_save_minutos || 10;
+    stopAutoSave();
+    if (minutos > 0) {
+        autoSaveInterval = setInterval(function() {
+            autoSaveCurrentState();
+        }, minutos * 60 * 1000);
+    }
+    // Atualiza o select na UI
+    var selectEl = document.getElementById('cfg-autosave');
+    if (selectEl) selectEl.value = String(minutos);
+}
+
+function updateAutoSaveSetting() {
+    const selectEl = document.getElementById('cfg-autosave');
+    if (!selectEl) return;
+    const minutos = parseInt(selectEl.value);
+    const cfg = buildConfig();
+    cfg.auto_save_minutos = minutos;
+    saveConfigSilent(cfg);
+    setupAutoSave();
+    if (minutos > 0) {
+        toast('Salvamento automático: a cada ' + minutos + ' min', 'success');
+    } else {
+        toast('Salvamento automático desligado', 'success');
+    }
+}
+
+function stopAutoSave() {
+    if (autoSaveInterval) {
+        clearInterval(autoSaveInterval);
+        autoSaveInterval = null;
+    }
+}
+
+async function autoSaveCurrentState() {
+    if (!electronAvailable) return;
+    var path = document.getElementById('global-path') ? document.getElementById('global-path').value.trim() : '';
+    if (!path) return;
+
+    const e = document.getElementById('ext-curso')?.value || '';
+    const s = document.getElementById('ext-sigla')?.value || '';
+    const f = document.getElementById('ext-fase')?.value || '';
+    const m = document.getElementById('ext-materia')?.value || '';
+
+    const projectData = {
+        caminho: path,
+        emailEntrada: e,
+        emailSigla: s,
+        emailFase: f,
+        emailMateria: m,
+        emailTipo: document.getElementById('email-tipo')?.value || 'varios',
+        criadoEm: new Date().toISOString(),
+        autoSave: true
+    };
+
+    try {
+        // Usa o nome da pasta como prefixo estável (último segmento do caminho)
+        const pathParts = path.replace(/\\/g, '/').split('/').filter(p => p.trim());
+        const folderName = pathParts[pathParts.length - 1] || 'SemNome';
+        // Limpa caracteres especiais do nome da pasta para usar como prefixo
+        const cleanPrefix = folderName.replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 50);
+        
+        const now = new Date();
+        const dateStr = now.getFullYear() + '.' + String(now.getMonth()+1).padStart(2,'0') + '.' + String(now.getDate()).padStart(2,'0') + '_' + String(now.getHours()).padStart(2,'0') + 'h' + String(now.getMinutes()).padStart(2,'0') + 'm';
+        const baseName = cleanPrefix + '_AutoSave_' + dateStr;
+
+        // Verifica autosaves existentes (qualquer AutoSave desta pasta)
+        const existingProjects = await invokeRust('listarProjetos') || [];
+        const autoSavePattern = cleanPrefix + '_AutoSave_';
+        const existingAutoSaves = existingProjects
+            .filter(p => p.startsWith(autoSavePattern))
+            .sort();
+
+        console.log('[AutoSave] Autosaves existentes para "' + cleanPrefix + '":', existingAutoSaves.length, existingAutoSaves);
+
+        // Se já há 5 autosaves, deleta os mais antigos até ficar com 4
+        while (existingAutoSaves.length >= 5) {
+            const oldestAutoSave = existingAutoSaves.shift(); // Remove o primeiro (mais antigo)
+            await invokeRust('deletarProjeto', { nome: oldestAutoSave });
+            console.log('[AutoSave] Deletado autosave mais antigo:', oldestAutoSave);
+        }
+
+        await invokeRust('salvarProjeto', { nome: baseName, dados: projectData });
+        console.log('[AutoSave] Projeto salvo:', baseName);
+        toast('\uD83D\uDCBE AutoSave: ' + baseName, 'success');
+    } catch(e) {
+        console.log('[AutoSave] Erro:', e);
+    }
+}
+
+// ============ PERFIS DE CORES / TEMAS ============
+const defaultProfiles = {
+    'POSTECH Escuro': {
+        bg: '#111111', surface: '#222222', surfaceDark: '#1a1a1a', border: '#333333',
+        headerBg: '#000000', text: '#ffffff', textDim: '#999999', primary: '#75c4b9',
+        primaryDark: '#5aa896', success: '#4caf50', danger: '#f44336', warning: '#ff9800',
+        accent: '#e94560', sidebarBg: '#000000', cardBg: '#1b1b1b', inputBg: '#111111',
+        btnPrimaryBg: '#75c4b9', btnPrimaryText: '#000000', btnSecondaryBg: '#333333',
+        btnSecondaryText: '#ffffff', shadow: 'rgba(0,0,0,0.3)', overlay: 'rgba(0,0,0,0.7)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    },
+    'POSTECH Claro': {
+        bg: '#f5f5f5', surface: '#ffffff', surfaceDark: '#f0f0f0', border: '#dddddd',
+        headerBg: '#ffffff', text: '#333333', textDim: '#777777', primary: '#75c4b9',
+        primaryDark: '#5aa896', success: '#4caf50', danger: '#f44336', warning: '#ff9800',
+        accent: '#e91e63', sidebarBg: '#fafafa', cardBg: '#ffffff', inputBg: '#f5f5f5',
+        btnPrimaryBg: '#75c4b9', btnPrimaryText: '#ffffff', btnSecondaryBg: '#e0e0e0',
+        btnSecondaryText: '#333333', shadow: 'rgba(0,0,0,0.1)', overlay: 'rgba(0,0,0,0.5)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    },
+    'Neon Hacker': {
+        bg: '#0a0a0a', surface: '#111111', surfaceDark: '#0d0d0d', border: '#1a3a1a',
+        headerBg: '#000000', text: '#00ff41', textDim: '#008f24', primary: '#00ff41',
+        primaryDark: '#00cc33', success: '#00ff41', danger: '#ff0040', warning: '#ffff00',
+        accent: '#ff00ff', sidebarBg: '#050505', cardBg: '#0f1a0f', inputBg: '#0a0a0a',
+        btnPrimaryBg: '#00ff41', btnPrimaryText: '#000000', btnSecondaryBg: '#1a3a1a',
+        btnSecondaryText: '#00ff41', shadow: 'rgba(0,255,65,0.15)', overlay: 'rgba(0,0,0,0.8)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    },
+    'Pink Sakura': {
+        bg: '#1a0a14', surface: '#2d1a26', surfaceDark: '#1f1018', border: '#3d2a36',
+        headerBg: '#150810', text: '#ffcce6', textDim: '#cc88aa', primary: '#ff69b4',
+        primaryDark: '#cc5590', success: '#88cc88', danger: '#ff4466', warning: '#ffcc44',
+        accent: '#ff1493', sidebarBg: '#120610', cardBg: '#251520', inputBg: '#1a0a14',
+        btnPrimaryBg: '#ff69b4', btnPrimaryText: '#ffffff', btnSecondaryBg: '#3d2a36',
+        btnSecondaryText: '#ffcce6', shadow: 'rgba(255,105,180,0.15)', overlay: 'rgba(0,0,0,0.7)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    },
+    'Industrial': {
+        bg: '#1c1c1c', surface: '#2a2a2a', surfaceDark: '#222222', border: '#3a3a3a',
+        headerBg: '#111111', text: '#e0e0e0', textDim: '#888888', primary: '#ff8c00',
+        primaryDark: '#cc7000', success: '#6b8e23', danger: '#b22222', warning: '#ffa500',
+        accent: '#4682b4', sidebarBg: '#141414', cardBg: '#252525', inputBg: '#1c1c1c',
+        btnPrimaryBg: '#ff8c00', btnPrimaryText: '#000000', btnSecondaryBg: '#3a3a3a',
+        btnSecondaryText: '#e0e0e0', shadow: 'rgba(0,0,0,0.4)', overlay: 'rgba(0,0,0,0.7)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    },
+    'Carbon': {
+        bg: '#0d0d0d', surface: '#1a1a1a', surfaceDark: '#141414', border: '#2a2a2a',
+        headerBg: '#080808', text: '#cccccc', textDim: '#666666', primary: '#888888',
+        primaryDark: '#666666', success: '#556b2f', danger: '#8b0000', warning: '#b8860b',
+        accent: '#4a4a4a', sidebarBg: '#0a0a0a', cardBg: '#161616', inputBg: '#0d0d0d',
+        btnPrimaryBg: '#555555', btnPrimaryText: '#ffffff', btnSecondaryBg: '#2a2a2a',
+        btnSecondaryText: '#cccccc', shadow: 'rgba(0,0,0,0.5)', overlay: 'rgba(0,0,0,0.8)',
+        gradient: 'none', bgImage: 'none', bgSize: 'cover', bgPosition: 'center'
+    }
+};
+
+let colorProfiles = JSON.parse(JSON.stringify(defaultProfiles));
+let activeProfile = 'POSTECH Escuro';
+
+function applyColorProfile(profileName) {
+    const p = colorProfiles[profileName];
+    if (!p) return;
+    activeProfile = profileName;
+    const root = document.documentElement;
+    root.style.setProperty('--bg', p.bg);
+    root.style.setProperty('--surface', p.surface);
+    root.style.setProperty('--surface-dark', p.surfaceDark);
+    root.style.setProperty('--border', p.border);
+    root.style.setProperty('--header-bg', p.headerBg);
+    root.style.setProperty('--text', p.text);
+    root.style.setProperty('--text-dim', p.textDim);
+    root.style.setProperty('--primary', p.primary);
+    root.style.setProperty('--primary-dark', p.primaryDark);
+    root.style.setProperty('--success', p.success);
+    root.style.setProperty('--danger', p.danger);
+    root.style.setProperty('--warning', p.warning);
+    root.style.setProperty('--accent', p.accent);
+    root.style.setProperty('--sidebar-bg', p.sidebarBg);
+    root.style.setProperty('--card-bg', p.cardBg);
+    root.style.setProperty('--input-bg', p.inputBg);
+    root.style.setProperty('--btn-primary-bg', p.btnPrimaryBg);
+    root.style.setProperty('--btn-primary-text', p.btnPrimaryText);
+    root.style.setProperty('--btn-secondary-bg', p.btnSecondaryBg);
+    root.style.setProperty('--btn-secondary-text', p.btnSecondaryText);
+    root.style.setProperty('--shadow', p.shadow);
+    root.style.setProperty('--overlay', p.overlay);
+    // Background image/gradient
+    if (p.bgImage && p.bgImage !== 'none') {
+        document.body.style.backgroundImage = "url('" + p.bgImage + "')";
+        document.body.style.backgroundSize = p.bgSize || 'cover';
+        document.body.style.backgroundPosition = p.bgPosition || 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+    } else if (p.gradient && p.gradient !== 'none') {
+        document.body.style.backgroundImage = p.gradient;
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundAttachment = 'fixed';
+    } else {
+        document.body.style.backgroundImage = 'none';
+        document.body.style.background = p.bg;
+    }
+    // Salva perfil ativo
+    const cfg = buildConfig();
+    saveConfigSilent(cfg);
+}
+
+function openThemeQuickSwitch() {
+    // Remove se já existir
+    const old = document.getElementById('theme-quick-switch');
+    if (old) { old.remove(); return; }
+
+    const overlay = document.createElement('div');
+    overlay.id = 'theme-quick-switch';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:9998;background:transparent';
+    overlay.onclick = () => overlay.remove();
+
+    const panel = document.createElement('div');
+    panel.style.cssText = 'position:fixed;top:56px;right:16px;z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;box-shadow:0 8px 32px var(--shadow);min-width:220px';
+
+    let html = '<div style="font-weight:700;font-size:var(--fs-md);color:var(--primary);margin-bottom:.8rem">🎨 Perfis de Cores</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:6px">';
+    for (const name of Object.keys(colorProfiles)) {
+        const isActive = name === activeProfile;
+        html += '<button class="btn btn-sm" style="justify-content:flex-start;background:' + (isActive ? 'var(--primary)' : 'var(--surface-dark)') + ';color:' + (isActive ? '#fff' : 'var(--text)') + '" onclick="applyColorProfile(\'' + name + '\');document.getElementById(\'theme-quick-switch\').remove()">' + (isActive ? '✓ ' : '') + name + '</button>';
+    }
+    html += '</div>';
+    html += '<div style="margin-top:.8rem;padding-top:.8rem;border-top:1px solid var(--border)"><button class="btn btn-sm btn-secondary" style="width:100%" onclick="document.getElementById(\'theme-quick-switch\').remove();showPanel(\'panel-config\');toggleConfigSection(\'cfg-section-aparencia\')">⚙️ Configurações Avançadas</button></div>';
+
+    panel.innerHTML = html;
+    overlay.appendChild(panel);
+    document.body.appendChild(overlay);
+}
+
+// ============ EDITOR DE PERFIS DE CORES ============
+function toHexColor(val) {
+    if (!val || val === 'none' || val === 'transparent') return '#000000';
+    // Se já é hex válido de 6 dígitos
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) return val;
+    // Se é hex de 3 dígitos (#000 → #000000)
+    if (/^#[0-9a-fA-F]{3}$/.test(val)) {
+        return '#' + val[1] + val[1] + val[2] + val[2] + val[3] + val[3];
+    }
+    // Se é rgba ou rgb, extrai os valores
+    const rgbMatch = val.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (rgbMatch) {
+        const r = parseInt(rgbMatch[1]).toString(16).padStart(2, '0');
+        const g = parseInt(rgbMatch[2]).toString(16).padStart(2, '0');
+        const b = parseInt(rgbMatch[3]).toString(16).padStart(2, '0');
+        return '#' + r + g + b;
+    }
+    // Se é gradiente ou outro valor não-cor, retorna preto
+    if (val.includes('gradient') || val.includes('url(')) return '#000000';
+    return '#000000';
+}
+
+const profileColorFields = [
+    { key: 'bg', label: 'Fundo principal' },
+    { key: 'surface', label: 'Superfície' },
+    { key: 'surfaceDark', label: 'Superfície escura' },
+    { key: 'border', label: 'Bordas' },
+    { key: 'headerBg', label: 'Fundo do cabeçalho' },
+    { key: 'text', label: 'Texto principal' },
+    { key: 'textDim', label: 'Texto secundário' },
+    { key: 'primary', label: 'Cor primária' },
+    { key: 'primaryDark', label: 'Cor primária escura' },
+    { key: 'success', label: 'Sucesso' },
+    { key: 'danger', label: 'Erro/Perigo' },
+    { key: 'warning', label: 'Aviso' },
+    { key: 'accent', label: 'Destaque' },
+    { key: 'sidebarBg', label: 'Fundo da sidebar' },
+    { key: 'cardBg', label: 'Fundo dos cards' },
+    { key: 'inputBg', label: 'Fundo dos inputs' },
+    { key: 'btnPrimaryBg', label: 'Botão primário' },
+    { key: 'btnPrimaryText', label: 'Texto botão primário' },
+    { key: 'btnSecondaryBg', label: 'Botão secundário' },
+    { key: 'btnSecondaryText', label: 'Texto botão secundário' },
+    { key: 'shadow', label: 'Sombra' }
+];
+
+let editingProfileName = null;
+
+function renderProfilesEditor() {
+    const container = document.getElementById('profiles-editor');
+    if (!container) return;
+
+    let html = '<div style="display:flex;flex-direction:column;gap:12px">';
+
+    // Lista de perfis
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px">';
+    for (const name of Object.keys(colorProfiles)) {
+        const isActive = name === activeProfile;
+        html += '<button class="btn btn-sm" style="background:' + (isActive ? 'var(--primary)' : 'var(--surface-dark)') + ';color:' + (isActive ? '#fff' : 'var(--text)') + '" onclick="applyColorProfile(\'' + name + '\')">' + (isActive ? '✓ ' : '') + name + '</button>';
+    }
+    html += '<button class="btn btn-sm btn-secondary" onclick="createNewProfile()">+ Novo Perfil</button>';
+    html += '</div>';
+
+    // Editor do perfil ativo
+    const p = colorProfiles[activeProfile];
+    if (p) {
+        html += '<div style="border-top:1px solid var(--border);padding-top:12px">';
+        html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
+        html += '<span style="font-weight:600;color:var(--primary)">Editando: ' + activeProfile + '</span>';
+        html += '<div style="display:flex;gap:6px">';
+        if (!['Escuro', 'Claro'].includes(activeProfile)) {
+            html += '<button class="btn btn-sm" style="background:var(--danger)" onclick="deleteProfile(\'' + activeProfile + '\')">🗑 Excluir</button>';
+        }
+        html += '<button class="btn btn-sm btn-secondary" onclick="renameProfile(\'' + activeProfile + '\')">✏️ Renomear</button>';
+        html += '<button class="btn btn-sm btn-secondary" onclick="duplicateProfile(\'' + activeProfile + '\')">📋 Duplicar</button>';
+        html += '</div></div>';
+
+        // Cores
+        html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">';
+        for (const field of profileColorFields) {
+            const val = p[field.key] || '#000000';
+            const hexVal = toHexColor(val);
+            html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:.4rem .6rem;background:var(--surface-dark);border-radius:6px">';
+            html += '<span style="font-size:var(--fs-sm);color:var(--text-dim)">' + field.label + '</span>';
+            html += '<input type="color" value="' + hexVal + '" onchange="updateProfileColor(\'' + activeProfile + '\',\'' + field.key + '\',this.value)" style="width:32px;height:24px;border:none;border-radius:4px;cursor:pointer;background:none">';
+            html += '</div>';
+        }
+        html += '</div>';
+
+        // Gradiente
+        html += '<div style="margin-bottom:8px"><span style="font-size:var(--fs-sm);color:var(--text-dim);font-weight:600">Gradiente (sobrescreve fundo)</span>';
+        html += '<input type="text" value="' + (p.gradient || '') + '" placeholder="linear-gradient(135deg, #1a1a2e, #16213e)" onchange="updateProfileField(\'' + activeProfile + '\',\'gradient\',this.value)" style="width:100%;padding:.4rem;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-family:var(--mono);font-size:var(--fs-sm);margin-top:4px">';
+        html += '</div>';
+
+        // Imagem de fundo
+        html += '<div style="margin-bottom:8px"><span style="font-size:var(--fs-sm);color:var(--text-dim);font-weight:600">Imagem de fundo (URL/base64)</span>';
+        html += '<input type="text" value="' + (p.bgImage && p.bgImage !== 'none' ? p.bgImage : '') + '" placeholder="https://... ou data:image/..." onchange="updateProfileField(\'' + activeProfile + '\',\'bgImage\',this.value || \'none\')" style="width:100%;padding:.4rem;border:1px solid var(--border);border-radius:6px;background:var(--input-bg);color:var(--text);font-family:var(--mono);font-size:var(--fs-sm);margin-top:4px">';
+        html += '<div style="display:flex;gap:8px;margin-top:4px">';
+        html += '<span style="font-size:var(--fs-sm);color:var(--text-dim)">Tamanho:</span>';
+        html += '<select onchange="updateProfileField(\'' + activeProfile + '\',\'bgSize\',this.value)" style="background:var(--input-bg);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:.2rem">';
+        html += '<option value="cover" ' + (p.bgSize === 'cover' ? 'selected' : '') + '>Cover</option>';
+        html += '<option value="contain" ' + (p.bgSize === 'contain' ? 'selected' : '') + '>Contain</option>';
+        html += '<option value="100% 100%" ' + (p.bgSize === '100% 100%' ? 'selected' : '') + '>Esticar</option>';
+        html += '</select></div></div>';
+
+        // Botões de ação
+        html += '<div style="display:flex;gap:8px;margin-top:8px">';
+        html += '<button class="btn btn-sm btn-primary" onclick="saveColorProfiles()">💾 Salvar Perfis</button>';
+        html += '<button class="btn btn-sm btn-secondary" onclick="resetProfilesToDefault()">🔄 Restaurar Padrões</button>';
+        html += '</div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function updateProfileColor(profileName, key, value) {
+    if (colorProfiles[profileName]) {
+        colorProfiles[profileName][key] = value;
+        applyColorProfile(profileName);
+    }
+}
+
+function updateProfileField(profileName, key, value) {
+    if (colorProfiles[profileName]) {
+        colorProfiles[profileName][key] = value;
+        applyColorProfile(profileName);
+    }
+}
+
+// Prompt customizado (substitui prompt() nativo que não funciona no Electron)
+function customPrompt(message, defaultValue, callback) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:10001;display:flex;align-items:center;justify-content:center;background:var(--overlay)';
+    overlay.innerHTML = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:400px;width:90%;box-shadow:0 8px 32px var(--shadow)">
+            <div style="font-weight:600;color:var(--text);margin-bottom:1rem">${message}</div>
+            <input type="text" id="custom-prompt-input" value="${defaultValue || ''}" style="width:100%;padding:.6rem;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text);font-size:var(--fs-md);margin-bottom:1rem">
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn btn-sm btn-secondary" id="custom-prompt-cancel">Cancelar</button>
+                <button class="btn btn-sm btn-primary" id="custom-prompt-ok">OK</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    const input = overlay.querySelector('#custom-prompt-input');
+    input.focus();
+    input.select();
+    overlay.querySelector('#custom-prompt-cancel').onclick = () => { overlay.remove(); callback(null); };
+    overlay.querySelector('#custom-prompt-ok').onclick = () => { const v = input.value.trim(); overlay.remove(); callback(v); };
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); overlay.querySelector('#custom-prompt-ok').click(); }
+        if (e.key === 'Escape') { e.preventDefault(); overlay.querySelector('#custom-prompt-cancel').click(); }
+    });
+}
+
+function customConfirm(message, callback) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:10001;display:flex;align-items:center;justify-content:center;background:var(--overlay)';
+    overlay.innerHTML = `
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:400px;width:90%;box-shadow:0 8px 32px var(--shadow)">
+            <div style="font-weight:600;color:var(--text);margin-bottom:1.5rem">${message}</div>
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+                <button class="btn btn-sm btn-secondary" id="custom-confirm-no">Não</button>
+                <button class="btn btn-sm btn-primary" id="custom-confirm-yes">Sim</button>
+            </div>
+        </div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#custom-confirm-no').onclick = () => { overlay.remove(); callback(false); };
+    overlay.querySelector('#custom-confirm-yes').onclick = () => { overlay.remove(); callback(true); };
+}
+
+function createNewProfile() {
+    customPrompt('Nome do novo perfil:', '', (name) => {
+        if (!name) return;
+        if (colorProfiles[name]) { toast('Já existe um perfil com esse nome.', 'error'); return; }
+        colorProfiles[name] = JSON.parse(JSON.stringify(colorProfiles[activeProfile]));
+        activeProfile = name;
+        applyColorProfile(activeProfile);
+        renderProfilesEditor();
+    });
+}
+
+function deleteProfile(name) {
+    if (['Escuro', 'Claro'].includes(name)) { toast('Não é possível excluir os perfis padrão.', 'error'); return; }
+    customConfirm('Excluir o perfil "' + name + '"?', (ok) => {
+        if (!ok) return;
+        delete colorProfiles[name];
+        activeProfile = 'Escuro';
+        applyColorProfile('Escuro');
+        renderProfilesEditor();
+    });
+}
+
+function renameProfile(oldName) {
+    if (['Escuro', 'Claro'].includes(oldName)) { toast('Não é possível renomear os perfis padrão.', 'error'); return; }
+    customPrompt('Novo nome para o perfil:', oldName, (newName) => {
+        if (!newName || newName === oldName) return;
+        if (colorProfiles[newName]) { toast('Já existe um perfil com esse nome.', 'error'); return; }
+        colorProfiles[newName] = colorProfiles[oldName];
+        delete colorProfiles[oldName];
+        activeProfile = newName;
+        applyColorProfile(activeProfile);
+        renderProfilesEditor();
+    });
+}
+
+function duplicateProfile(name) {
+    customPrompt('Nome da cópia:', name + ' (cópia)', (newName) => {
+        if (!newName) return;
+        if (colorProfiles[newName]) { toast('Já existe um perfil com esse nome.', 'error'); return; }
+        colorProfiles[newName] = JSON.parse(JSON.stringify(colorProfiles[name]));
+        activeProfile = newName;
+        applyColorProfile(activeProfile);
+        renderProfilesEditor();
+    });
+}
+
+function saveColorProfiles() {
+    const cfg = loadConfig();
+    cfg.colorProfiles = colorProfiles;
+    cfg.activeProfile = activeProfile;
+    saveConfig(cfg);
+    toast('Perfis salvos!', 'success');
+}
+
+function resetProfilesToDefault() {
+    customConfirm('Restaurar os perfis padrão? Todos os perfis customizados serão perdidos.', (ok) => {
+        if (!ok) return;
+        colorProfiles = JSON.parse(JSON.stringify(defaultProfiles));
+        activeProfile = 'Escuro';
+        applyColorProfile('Escuro');
+        const cfg = loadConfig();
+        delete cfg.colorProfiles;
+        delete cfg.activeProfile;
+        saveConfig(cfg);
+        renderProfilesEditor();
+        toast('Perfis restaurados ao padrão', 'success');
+    });
+}
+
+// ============ BACKUP / RESTAURAÇÃO ============
+async function createBackup() {
+    try {
+        const cfg = loadConfig();
+        const atalhos = localStorage.getItem('atalhos');
+        let projetos = [];
+        if (electronAvailable) {
+            try { projetos = await invokeRust('listarProjetos'); } catch(e) {}
+        }
+        const backup = {
+            version: APP_VERSION,
+            date: new Date().toISOString(),
+            config: cfg,
+            shortcuts: atalhos ? JSON.parse(atalhos) : null,
+            projects: projetos,
+            colorProfiles: colorProfiles,
+            activeProfile: activeProfile
+        };
+
+        const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'organizador-postech-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Backup criado com sucesso!', 'success');
+    } catch(e) {
+        toast('Erro ao criar backup: ' + e, 'error');
+    }
+}
+
+async function restoreBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const backup = JSON.parse(text);
+            if (!backup.version || !backup.config) throw new Error('Arquivo de backup inválido');
+
+            if (!confirm('Restaurar backup de ' + new Date(backup.date).toLocaleString() + '?\n\nIsso substituirá todas as configurações e atalhos atuais.')) return;
+
+            // Restaura configurações
+            if (backup.config) saveConfig(backup.config);
+            if (backup.shortcuts) localStorage.setItem('atalhos', JSON.stringify(backup.shortcuts));
+            if (backup.colorProfiles) {
+                colorProfiles = JSON.parse(JSON.stringify({ ...defaultProfiles, ...backup.colorProfiles }));
+                activeProfile = backup.activeProfile || 'Escuro';
+                applyColorProfile(activeProfile);
+            }
+
+            // Restaura projetos no Rust
+            if (electronAvailable && backup.projects && backup.projects.length > 0) {
+                for (const nome of backup.projects) {
+                    try {
+                        const dados = await invokeRust('carregarProjeto', { nome });
+                        // Projeto já existe, não precisa recriar
+                    } catch(e) {
+                        // Projeto não encontrado, ignora
+                    }
+                }
+            }
+
+            // Recarrega atalhos
+            const saved = localStorage.getItem('atalhos');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    for (const k of Object.keys(defaultShortcuts)) {
+                        if (parsed[k]) shortcuts[k] = parsed[k];
+                    }
+                } catch(e) {}
+            }
+            updateNavTooltips();
+
+            toast('Backup restaurado com sucesso! Reinicie a aplicação para aplicar todas as mudanças.', 'success');
+        } catch(e) {
+            toast('Erro ao restaurar backup: ' + e, 'error');
+        }
+    };
+    input.click();
+}
+
+// ============ VERSÕES / UPDATE ============
+const GITHUB_REPO = 'DyFuchs/Ferramentas_POSTECH_Electron';
+const GITHUB_API_URL = 'https://api.github.com/repos/' + GITHUB_REPO + '/releases/latest';
+
+function renderVersionsEditor() {
+    const container = document.getElementById('versions-editor');
+    if (!container) return;
+    const cfg = loadConfig();
+    const autoCheck = cfg.auto_check_updates !== false; // default: true
+    const lastCheck = cfg.last_update_check ? new Date(cfg.last_update_check).toLocaleString() : 'Nunca';
+    const availableVersion = cfg.available_version || null;
+
+    let html = '';
+    // Versão atual
+    html += '<div style="display:flex;align-items:center;gap:12px;padding:.8rem 1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border);margin-bottom:12px">';
+    html += '<div style="flex:1"><div style="font-size:var(--fs-sm);color:var(--text-dim)">Versão instalada</div>';
+    html += '<div style="font-weight:700;color:var(--primary);font-size:var(--fs-lg)">' + APP_VERSION + '</div></div>';
+    html += '<div style="padding:.4rem .8rem;background:var(--primary);color:#000;border-radius:6px;font-weight:700;font-size:var(--fs-sm)">ESTÁVEL</div></div>';
+
+    // Atualização disponível
+    if (availableVersion && availableVersion !== APP_VERSION) {
+        html += '<div style="display:flex;align-items:center;gap:12px;padding:.8rem 1rem;background:rgba(255,152,0,.1);border-radius:8px;border:1px solid var(--warning);margin-bottom:12px">';
+        html += '<div style="flex:1"><div style="font-size:var(--fs-sm);color:var(--warning)">Nova versão disponível</div>';
+        html += '<div style="font-weight:700;color:var(--warning);font-size:var(--fs-lg)">' + availableVersion + '</div></div>';
+        html += '<button class="btn btn-sm btn-primary" onclick="startUpdate()">⬇ Atualizar Agora</button></div>';
+    }
+
+    // Buscar atualizações
+    html += '<div style="display:flex;gap:8px;margin-bottom:12px">';
+    html += '<button class="btn btn-sm btn-secondary" onclick="checkForUpdates()">🔍 Buscar Atualizações</button>';
+    html += '<span style="font-size:var(--fs-xs);color:var(--text-dim);align-self:center">Última verificação: ' + lastCheck + '</span></div>';
+
+    // Auto-check
+    html += '<div class="config-row"><div><div class="config-label">Buscar atualizações automaticamente</div>';
+    html += '<div class="config-desc">Verifica novas versões ao iniciar a aplicação</div></div>';
+    html += '<input type="checkbox" ' + (autoCheck ? 'checked' : '') + ' onchange="toggleAutoCheck(this.checked)"></div>';
+
+    // Backup antes de atualizar
+    html += '<div class="config-row"><div><div class="config-label">Backup antes de atualizar</div>';
+    html += '<div class="config-desc">Cria backup automático antes de instalar atualizações</div></div>';
+    html += '<input type="checkbox" ' + (cfg.backup_before_update !== false ? 'checked' : '') + ' onchange="toggleBackupBeforeUpdate(this.checked)"></div>';
+
+    // Info
+    html += '<div style="margin-top:12px;padding:.8rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">';
+    html += '<div style="font-size:var(--fs-xs);color:var(--text-dim)">Repositório GitHub: <span style="color:var(--primary);font-family:var(--mono)">' + GITHUB_REPO + '</span></div>';
+    html += '<div style="font-size:var(--fs-xs);color:var(--text-dim);margin-top:4px">As atualizações são baixadas como .zip e instaladas localmente.</div></div>';
+
+    container.innerHTML = html;
+}
+
+async function checkForUpdates() {
+    toast('Buscando atualizações...', 'info');
+    try {
+        if (electronAvailable && window.electronAPI?.checkForUpdates) {
+            // Usa o electron-updater (busca real no GitHub Releases)
+            await window.electronAPI.checkForUpdates();
+        } else {
+            // Fallback: busca manual pela API do GitHub
+            const cfg = loadConfig();
+            cfg.last_update_check = new Date().toISOString();
+            const response = await fetch(GITHUB_API_URL);
+            if (!response.ok) throw new Error('Erro na resposta: ' + response.status);
+            const data = await response.json();
+            const latestVersion = data.tag_name || data.name;
+            if (latestVersion && latestVersion !== APP_VERSION) {
+                cfg.available_version = latestVersion;
+                saveConfig(cfg);
+                toast('Nova versão disponível: ' + latestVersion, 'success');
+                renderVersionsEditor();
+            } else {
+                cfg.available_version = null;
+                saveConfig(cfg);
+                toast('Você está na versão mais recente!', 'success');
+                renderVersionsEditor();
+            }
+        }
+    } catch (e) {
+        console.log('Erro ao buscar atualizações:', e);
+        toast('Erro ao buscar atualizações. Verifique sua conexão.', 'error');
+    }
+}
+
+function startUpdate() {
+    const cfg = loadConfig();
+    if (cfg.backup_before_update !== false) {
+        if (!confirm('Um backup será criado antes de atualizar. Deseja continuar?')) return;
+        createBackup();
+    }
+    toast('Baixando atualização...', 'info');
+    if (electronAvailable && window.electronAPI?.downloadUpdate) {
+        window.electronAPI.downloadUpdate();
+    } else {
+        // Fallback: abre o GitHub Releases no navegador
+        window.open('https://github.com/' + GITHUB_REPO + '/releases', '_blank');
+    }
+}
+
+function toggleAutoCheck(enabled) {
+    const cfg = loadConfig();
+    cfg.auto_check_updates = enabled;
+    saveConfig(cfg);
+    toast(enabled ? 'Busca automática ativada' : 'Busca automática desativada', 'info');
+}
+
+function toggleBackupBeforeUpdate(enabled) {
+    const cfg = loadConfig();
+    cfg.backup_before_update = enabled;
+    saveConfig(cfg);
+}
+
+function startUpdate() {
+    const cfg = loadConfig();
+    if (cfg.backup_before_update !== false) {
+        if (!confirm('Um backup será criado antes de atualizar. Deseja continuar?')) return;
+        createBackup();
+    }
+    toast('Iniciando atualização...', 'info');
+    // TODO: Implementar download e instalação da atualização
+    setTimeout(() => {
+        toast('Atualização simulada! Em produção, o app reiniciaria com a nova versão.', 'success');
+    }, 2000);
+}
+
+// ============ INICIALIZAÇÃO ============
+document.addEventListener('DOMContentLoaded', async () => {
+    // Atualiza versão na UI
+    document.querySelectorAll('#sidebar-version, #credits-version').forEach(el => { el.textContent = APP_VERSION; });
+    // Carrega configuração salva (aguarda o Rust)
+    const savedCfg = await loadConfig();
+    // Suporta ambos os formatos de cores (camelCase do Rust antigo, snake_case do Rust novo)
+    var colorProfilesData = savedCfg.colorProfiles || savedCfg.color_profiles;
+    if (colorProfilesData) {
+        try {
+            colorProfiles = JSON.parse(JSON.stringify({ ...defaultProfiles, ...colorProfilesData }));
+        } catch(e) {}
+    }
+    var activeProfileToLoad = savedCfg.activeProfile || savedCfg.active_profile || 'Escuro';
+    applyColorProfile(activeProfileToLoad);
+    setupKeyboardShortcuts();
+    // Carrega atalhos salvos
+    const saved = localStorage.getItem('atalhos');
+    if (saved) {
+        try {
+            const parsed = JSON.parse(saved);
+            const migrated = migrateShortcuts(parsed);
+            for (const k of Object.keys(defaultShortcuts)) {
+                if (migrated[k]) shortcuts[k] = migrated[k];
+            }
+        } catch(e) {}
+    }
+    updateNavTooltips();
+    // Inicializa auto-save
+    setupAutoSave();
+    // Atualiza lista de projetos ao abrir
+    setTimeout(() => {
+        if (electronAvailable) refreshProjects();
+    }, 1000);
+    // Auto-carrega último projeto
+    setTimeout(() => {
+        autoLoadLastProject();
+    }, 1500);
+    // Verifica se é primeira execução (tutorial)
+    setTimeout(() => {
+        if (!localStorage.getItem('tutorial_completed')) {
+            startTutorial();
+        }
+    }, 2000);
+
+    // ============ AUTO-UPDATE EVENT LISTENERS ============
+    if (electronAvailable && window.electronAPI?.onUpdateAvailable) {
+        window.electronAPI.onUpdateAvailable(function(info) {
+            toast('Nova versão disponível: ' + info.version, 'info');
+            // Atualiza a UI de versões se estiver aberta
+            var cfg = loadConfig();
+            cfg.available_version = info.version;
+            saveConfig(cfg);
+            renderVersionsEditor();
+        });
+
+        window.electronAPI.onUpdateDownloaded(function(info) {
+            var updaterHtml = '';
+            updaterHtml += '<div style="display:flex;align-items:center;gap:12px;padding:1rem;background:rgba(117,196,185,.1);border-radius:8px;border:1px solid var(--primary);margin-top:12px">';
+            updaterHtml += '<div style="flex:1"><div style="color:var(--success);font-weight:700">✓ Atualização baixada: v' + info.version + '</div>';
+            updaterHtml += '<div style="font-size:var(--fs-xs);color:var(--text-dim);margin-top:4px">Reinicie para instalar.</div></div>';
+            updaterHtml += '<button class="btn btn-sm btn-primary" onclick="window.electronAPI.quitAndInstall()">Reiniciar Agora</button>';
+            updaterHtml += '</div>';
+
+            // Adiciona a notificação no topo da página
+            var container = document.getElementById('page-title');
+            if (container && container.parentNode) {
+                var div = document.createElement('div');
+                div.id = 'update-notification';
+                div.innerHTML = updaterHtml;
+                container.parentNode.insertBefore(div, container.nextSibling);
+            }
+        });
+
+        window.electronAPI.onUpdateError(function(err) {
+            console.error('[UPDATER] Erro:', err);
+        });
+    }
+});
+
+async function autoLoadLastProject() {
+    if (!electronAvailable) return;
+    try {
+        const projetos = await invokeRust('listarProjetos');
+        if (!projetos || projetos.length === 0) return;
+        // Ordena por nome (que inclui data) e pega o mais recente
+        projetos.sort().reverse();
+        const ultimo = projetos[0];
+        if (ultimo && !ultimo.startsWith('AutoSave_')) {
+            console.log('[Init] Carregando último projeto:', ultimo);
+            await loadProject(ultimo);
+        } else if (ultimo) {
+            // Se só existe AutoSave, carrega o mais recente AutoSave
+            const autoSaves = projetos.filter(p => p.startsWith('AutoSave_')).sort().reverse();
+            if (autoSaves.length > 0) {
+                console.log('[Init] Carregando AutoSave mais recente:', autoSaves[0]);
+                await loadProject(autoSaves[0]);
+            }
+        }
+        // Após carregar, processa o caminho para extrair informações
+        setTimeout(() => {
+            extractPathInfo();
+        }, 300);
+    } catch(e) {
+        console.log('[Init] Erro ao auto-carregar:', e);
+    }
+}
+
+// ============ TUTORIAL GUIADO ============
+const tutorialSteps = [
+    {
+        title: 'Bem-vindo ao Organizador POSTECH! 👋',
+        text: 'Este tutorial vai guiá-lo pelas principais funcionalidades da aplicação. Você pode pular a qualquer momento.',
+        action: null
+    },
+    {
+        title: '1. Organizar Arquivos 📁',
+        text: 'Cole o caminho da pasta e escolha o modo: Automático (detecta padrões), Manual (você define as opções) ou Reverso (desfaz a organização). Use os botões de modo para alternar entre as opções.',
+        action: () => showPanel('panel-organizar')
+    },
+
+    {
+        title: '2. Editor de Emails 📧',
+        text: 'Gera automaticamente o assunto e corpo do email com base no caminho da pasta. Utilize os botões "Copiar Assunto" e "Copiar Corpo" para copiar rapidamente essas informações. O dropdown "Tipo de vídeo" altera a formatação: Matéria (email completo), Boas Vindas/Onboarding (vídeo único de ambientação), ou Extra (vídeo adicional).',
+        action: () => showPanel('panel-email')
+    },
+    {
+        title: '3. Gerador de Planilhas 📊',
+        text: 'Gera uma tabela pronta para copiar e colar no Controle de Vídeos.',
+        action: () => showPanel('panel-excel')
+    },
+    {
+        title: '4. Gerar Relatório 📄',
+        text: 'Cria um relatório detalhado com duração de cada vídeo e estrutura de pastas. Funciona tanto com arquivos organizados quanto desorganizados. Após a organização, use "Abrir Relatório" ou "Abrir Caminho" para acessar os arquivos.',
+        action: () => showPanel('panel-report')
+    },
+    {
+        title: '5. Projetos 📁',
+        text: 'Salve e carregue projetos para não perder seu trabalho. O app salva automaticamente a cada 10 minutos (configurável). Na aba Projetos você pode renomear, carregar ou deletar projetos salvos.',
+        action: () => showPanel('panel-projects')
+    },
+    {
+        title: '6. Configurações — Aparência 🎨',
+        text: 'Personalize a aparência: tamanho, peso e estilo da fonte. O botão "Perfil" no canto superior direito permite trocar temas rapidamente. Perfis incluem POSTECH Escuro/Claro, Neon Hacker, Pink Sakura, Industrial e Carbon.',
+        action: () => showPanel('panel-config')
+    },
+    {
+        title: '7. Configurações — Atalhos ⌨️',
+        text: 'Use 1-9 para navegar entre painéis. Ctrl+Enter para executar automático, Ctrl+R para reverso, Ctrl+S para planilha, Ctrl+P para salvar. Todos os atalhos são editáveis — defina até 3 teclas combinadas para cada ação.',
+        action: () => { showPanel('panel-config'); setTimeout(() => toggleConfigSection('cfg-section-atalhos'), 200); }
+    },
+    {
+        title: '8. Configurações — Salvamento 💾',
+        text: 'Configure o salvamento automático (1/5/10/15/20 minutos ou desligado). O app também salva automaticamente ao trocar de projeto ou fechar.',
+        action: () => { showPanel('panel-config'); setTimeout(() => toggleConfigSection('cfg-section-autosave'), 200); }
+    },
+    {
+        title: '9. Configurações — Versões 🔄',
+        text: 'Verifique se há novas versões da app. A busca automática pode ser ativada/desativada. É possível criar backup antes de atualizar.',
+        action: () => { showPanel('panel-config'); setTimeout(() => toggleConfigSection('cfg-section-versoes'), 200); }
+    },
+    {
+        title: '10. Backup e Restauração 💾',
+        text: 'Acesse em Extras > Backup / Restauração. Crie backups completos de configurações, atalhos, perfis de cores e projetos salvos. O backup é um arquivo JSON que pode ser transferido entre máquinas.',
+        action: () => showPanel('panel-backup')
+    },
+    {
+        title: 'Tudo pronto! 🎉',
+        text: 'Você já sabe o essencial! Acesse Extras > Tutorial Guiado para rever estas instruções. Use Extras > Documentação para referência completa. Bom trabalho!',
+        action: () => showPanel('panel-organizar')
+    }
+];
+
+let tutorialCurrentStep = 0;
+
+function startTutorial() {
+    tutorialCurrentStep = 0;
+    showTutorialStep();
+}
+
+function showTutorialStep() {
+    const step = tutorialSteps[tutorialCurrentStep];
+    if (!step) return;
+
+    // Remove overlay anterior
+    const oldOverlay = document.getElementById('tutorial-overlay');
+    if (oldOverlay) oldOverlay.remove();
+    document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+
+    // Executa ação do passo (navega para o painel)
+    if (step.action) step.action();
+
+    // Determina o elemento âncora baseado no passo
+    const stepAnchors = [
+        null, // 0: bem-vindo (centro)
+        '[data-panel="panel-organizar"]',
+        
+        
+        '[data-panel="panel-email"]',
+        '[data-panel="panel-excel"]',
+        '[data-panel="panel-report"]',
+        '[data-panel="panel-projects"]',
+        '[data-panel="panel-config"]',
+        '[data-panel="panel-config"]',
+        '[data-panel="panel-backup"]',
+        '[data-panel="panel-config"]',
+        null // último: tudo pronto
+    ];
+
+    const isFirst = tutorialCurrentStep === 0;
+    const isLast = tutorialCurrentStep === tutorialSteps.length - 1;
+    const canGoBack = tutorialCurrentStep > 0;
+    const canGoForward = tutorialCurrentStep < tutorialSteps.length - 1;
+
+    // Cria overlay transparente (não bloqueia interação)
+    const overlay = document.createElement('div');
+    overlay.id = 'tutorial-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;pointer-events:none';
+
+    // Cria balão do tutorial
+    const balloon = document.createElement('div');
+    balloon.style.cssText = 'position:absolute;background:var(--surface);border:2px solid var(--primary);border-radius:12px;padding:1.2rem;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.4);pointer-events:auto;z-index:10001';
+
+    // Posiciona o balão
+    const anchor = stepAnchors[tutorialCurrentStep];
+    if (anchor) {
+        const targetEl = document.querySelector(anchor);
+        if (targetEl) {
+            targetEl.classList.add('tutorial-highlight');
+            const rect = targetEl.getBoundingClientRect();
+            // Posiciona abaixo do elemento se houver espaço, senão acima
+            if (rect.bottom + 200 < window.innerHeight) {
+                balloon.style.top = (rect.bottom + 12) + 'px';
+                balloon.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - 380)) + 'px';
+            } else {
+                balloon.style.bottom = (window.innerHeight - rect.top + 12) + 'px';
+                balloon.style.left = Math.max(16, Math.min(rect.left, window.innerWidth - 380)) + 'px';
+            }
+        } else {
+            // Elemento não encontrado, posiciona no centro inferior
+            balloon.style.bottom = '80px';
+            balloon.style.left = '50%';
+            balloon.style.transform = 'translateX(-50%)';
+        }
+    } else {
+        // Passo sem âncora — centro da tela
+        balloon.style.top = '50%';
+        balloon.style.left = '50%';
+        balloon.style.transform = 'translate(-50%, -50%)';
+    }
+
+    balloon.innerHTML = `
+        <div style="font-size:1.1rem;font-weight:700;color:var(--primary);margin-bottom:.6rem">${step.title}</div>
+        <div style="color:var(--text);line-height:1.5;margin-bottom:1rem;font-size:var(--fs-sm)">${step.text}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+            <button class="btn btn-sm btn-secondary" id="tutorial-skip" style="background:var(--surface-dark);font-size:var(--fs-xs)">Pular</button>
+            <div style="display:flex;gap:6px;align-items:center">
+                <span style="color:var(--text-dim);font-size:var(--fs-xs)">${tutorialCurrentStep + 1}/${tutorialSteps.length}</span>
+                <button class="btn btn-sm btn-secondary" id="tutorial-back" ${canGoBack ? '' : 'disabled style="opacity:.3;cursor:not-allowed"'}>◀</button>
+                <button class="btn btn-sm btn-primary" id="tutorial-next">${isLast ? '✓' : '▶'}</button>
+            </div>
+        </div>
+    `;
+
+    overlay.appendChild(balloon);
+    document.body.appendChild(overlay);
+
+    document.getElementById('tutorial-skip').onclick = () => {
+        overlay.remove();
+        document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+        localStorage.setItem('tutorial_completed', 'true');
+    };
+
+    document.getElementById('tutorial-back').onclick = () => {
+        if (canGoBack) { tutorialCurrentStep--; showTutorialStep(); }
+    };
+
+    document.getElementById('tutorial-next').onclick = () => {
+        if (isLast) {
+            overlay.remove();
+            document.querySelectorAll('.tutorial-highlight').forEach(el => el.classList.remove('tutorial-highlight'));
+            localStorage.setItem('tutorial_completed', 'true');
+        } else if (canGoForward) {
+            tutorialCurrentStep++;
+            showTutorialStep();
+        }
+    };
+}
+
+// ============ EDIÇÃO DE NOME DE PROJETOS ============
+function editProjectName(oldName, btn) {
+    const container = btn.closest('div[style*="display:flex;align-items:center;justify-content:space-between"]');
+    const nameEl = container.querySelector('div[style*="font-weight:600"]');
+    if (!nameEl) return;
+
+    const currentName = oldName;
+    nameEl.innerHTML = `<input type="text" value="${escapeHtml(currentName)}" style="background:var(--surface);border:1px solid var(--primary);border-radius:6px;padding:.3rem .6rem;color:var(--text);font-weight:600;font-size:var(--fs-md);width:100%;max-width:300px" id="edit-name-input">`;
+    const input = document.getElementById('edit-name-input');
+    input.focus();
+    input.select();
+
+    const saveEdit = async () => {
+        const newName = input.value.trim();
+        if (newName && newName !== currentName) {
+            try {
+                await invokeRust('renomearProjeto', { nomeAntigo: currentName, nomeNovo: newName });
+                toast('Projeto renomeado!', 'success');
+                refreshProjects();
+            } catch(e) {
+                toast('Erro ao renomear: ' + e, 'error');
+                refreshProjects();
+            }
+        } else {
+            refreshProjects();
+        }
+    };
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); saveEdit(); }
+        if (e.key === 'Escape') { refreshProjects(); }
+    });
+    input.addEventListener('blur', saveEdit);
+}
+
+</script>
+
+</body>
+</html>

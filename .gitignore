@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.log
+*.local
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+rust-backend/target/
