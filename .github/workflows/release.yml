@@ -14,13 +14,13 @@ jobs:
         include:
           - os: windows-latest
             platform: win
+            cmd: npx electron-builder --win --x64 --publish always
           - os: macos-latest
             platform: mac
+            cmd: npx electron-builder --mac --x64 --publish always
           - os: ubuntu-latest
             platform: linux
-
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+            cmd: npx electron-builder --linux --x64 --publish always
 
     steps:
       - name: Checkout code
@@ -43,19 +43,10 @@ jobs:
           cargo build --release
         shell: bash
 
-      - name: Build Electron app (Windows)
-        if: matrix.platform == 'win'
-        run: npx electron-builder --win --x64 --publish always
-
-      - name: Build Electron app (Mac)
-        if: matrix.platform == 'mac'
+      - name: Build Electron app
+        run: ${{ matrix.cmd }}
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: npx electron-builder --mac --x64 --publish always
-
-      - name: Build Electron app (Linux)
-        if: matrix.platform == 'linux'
-        run: npx electron-builder --linux --x64 --publish always
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
