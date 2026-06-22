@@ -7,7 +7,8 @@
     "start": "electron .",
     "build:win": "electron-builder --win --x64 --publish never",
     "build:mac": "electron-builder --mac --x64 --publish never",
-    "build:all": "electron-builder --win --mac --x64 --publish never",
+    "build:linux": "electron-builder --linux --x64 --publish never",
+    "build:all": "electron-builder --win --mac --linux --x64 --publish never",
     "release:dev": "electron-builder --win --x64 --publish always --preRelease",
     "release:win": "electron-builder --win --x64 --publish always"
   },
@@ -48,6 +49,19 @@
     "mac": {
       "target": "dmg",
       "icon": "assets/icon.icns",
+      "publish": [
+        {
+          "provider": "github",
+          "owner": "DyFuchs",
+          "repo": "Ferramentas_POSTECH_Electron",
+          "releaseType": "release"
+        }
+      ]
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "icon": "assets/icon.png",
+      "category": "Utility",
       "publish": [
         {
           "provider": "github",

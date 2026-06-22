@@ -16,6 +16,8 @@ jobs:
             platform: win
           - os: macos-latest
             platform: mac
+          - os: ubuntu-latest
+            platform: linux
 
     steps:
       - name: Checkout code
@@ -32,15 +34,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Build Rust backend (Windows)
-        if: matrix.platform == 'win'
-        run: |
-          cd rust-backend
-          cargo build --release
-        shell: bash
-
-      - name: Build Rust backend (Mac)
-        if: matrix.platform == 'mac'
+      - name: Build Rust backend
         run: |
           cd rust-backend
           cargo build --release
@@ -55,6 +49,12 @@ jobs:
       - name: Build Electron app (Mac)
         if: matrix.platform == 'mac'
         run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+      - name: Build Electron app (Linux)
+        if: matrix.platform == 'linux'
+        run: npm run build:linux
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -79,6 +79,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.{exe,dmg,zip}
+          files: artifacts/**/*.{exe,dmg,zip,AppImage,deb,tar.gz}
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
