@@ -1,7 +1,10 @@
 {
   "name": "organizador-postech",
   "version": "0.1.0",
-  "description": "Organizador de Arquivos POSTECH - FIAP",
+  "author": {
+    "name": "Diana Fuchs Santos",
+    "email": "diana.fuchs@example.com"
+  },
   "main": "main.js",
   "scripts": {
     "start": "electron .",
