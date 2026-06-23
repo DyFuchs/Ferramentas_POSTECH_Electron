@@ -6,53 +6,76 @@ on:
       - 'v*'
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    
-    strategy:
-      matrix:
-        include:
-          - os: windows-latest
-            platform: win
-          - os: macos-latest
-            platform: mac
-          - os: ubuntu-latest
-            platform: linux
-
-    env:
-      GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
+  build-win:
+    runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Rust backend
-        shell: bash
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm install
+      - name: Build Rust + Electron (publish)
         run: |
-          cd rust-backend
-          cargo build --release
-
-      - name: Disable code signing (Mac only)
-        if: matrix.platform == 'mac'
-        run: echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> $GITHUB_ENV
-
-      - name: Build and publish
-        run: npx electron-builder --${{ matrix.platform }} --x64 --publish always
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+          cd rust-backend; cargo build --release
+          npx electron-builder --win --x64 --publish always
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.platform }}-build
-          path: dist/*
-          retention-days: 7
+          name: win-build
+          path: dist/*.exe
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm install
+      - name: Build Rust + Electron (no publish)
+        run: |
+          cd rust-backend; cargo build --release
+          npx electron-builder --mac --x64 --publish never
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-build
+          path: dist/*.dmg
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm install
+      - name: Build Rust + Electron (no publish)
+        run: |
+          cd rust-backend; cargo build --release
+          npx electron-builder --linux --x64 --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/*.AppImage
+
+  release:
+    needs: [build-win, build-mac, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*.{exe,dmg,AppImage}
+          draft: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
