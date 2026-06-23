@@ -1,11 +1,11 @@
-# CODEMAP - Organizador POSTECH Electron
+# CODEMAP - Ferramentas POSTECH Electron
 # Mapa completo do codigo para navegacao eficiente
-# Atualizado: 2026-06-19
+# Atualizado: 2026-06-23
 
 ## ESTRUTURA DE ARQUIVOS
 
 src/
-  index.html              # HTML principal + JS inline (~2874 linhas)
+  index.html              # HTML principal + JS inline (~3071 linhas)
   styles.css              # CSS extraído do <style> inline
   modules/
     api.js                # Comunicacao com Rust via IPC
@@ -21,13 +21,6 @@ src/
 3. <script src="modules/utils.js"></script>
 4. <script src="modules/ui-helpers.js"></script>
 5. <script> ... inline ... </script>
-
-## CONFLITOS DE ESCOPO RESOLVIDOS
-
-No inline, mudado de `let` para `var` para compatibilidade com modulos:
-- `electronAvailable` (var no api.js + var no inline)
-- `rustListeners` (var no api.js + var no inline)
-- `pendingAction` (var no ui-helpers.js + var no inline)
 
 ## FUNCOES DE CONFIGURACAO
 
@@ -115,6 +108,46 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 ### get_config_path() (~linha 649)
 - Retorna %APPDATA%/organizador-postech/config.json
 
+## FEEDBACK / GITHUB ISSUES
+
+### Painel panel-feedback (~linha 267)
+- Card adicionado no panel-extras com icone 📨
+- Formulario com: tipo (bug/feature/feedback), titulo, descricao
+- Info do sistema preenchida automaticamente (versao, plataforma, SO, Electron, Node)
+- Botao "Enviar Feedback" abre GitHub Issues em nova aba com URL pre-preenchida
+- Botao "Cancelar" volta para panel-extras
+
+### Funcoes JavaScript
+- `getSystemInfo()` — coleta versao, plataforma, SO, Electron, Node
+- `submitFeedback()` — valida campos, monta URL do GitHub, abre no navegador
+- `initFeedbackForm()` — atualiza div de info do sistema ao abrir painel
+- Chamada via `showPanel('panel-feedback')` com `setTimeout(initFeedbackForm, 100)`
+
+### URL do GitHub
+- Formato: `https://github.com/GITHUB_REPO/issues/new?title=&body=&labels=`
+- Labels: bug (para bug), enhancement (para feature), feedback (para geral)
+- Prefixo do titulo: [BUG], [FEATURE] ou [FEEDBACK]
+
+## AUTO-UPDATE
+
+### Configuracao
+- electron-updater no renderer (src/index.js)
+- Handlers IPC no main.js: check-for-updates, download-update, quit-and-install
+- Eventos: update-available, update-downloaded, update-error
+- Verificacao automatica a cada 30min + ao iniciar (5s depois)
+
+### Workflow de Release (.github/workflows/release.yml)
+- 3 jobs paralelos: build-win, build-mac, build-linux
+- Todos com --publish always (gera latest.yml, latest-mac.yml, latest-linux.yml)
+- Job upload-release: baixa artifacts e adiciona a release
+- draft: false (release publicada imediatamente)
+- GH_TOKEN: ${{ github.token }} (token automatico do GitHub Actions)
+
+### extraResources por plataforma
+- Windows: rust-backend/target/release/organizador-postech-backend.exe -> backend/
+- Mac: rust-backend/target/release/organizador-postech-backend -> backend/
+- Linux: rust-backend/target/release/organizador-postech-backend -> backend/
+
 ## PROBLEMAS CONHECIDOS E SOLUCOES
 
 ### 1. invokeRust race condition
@@ -145,25 +178,22 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - Era consequencia de erro de sintaxe anterior impedir o parse do const APP_VERSION
 - Resolvido ao corrigir a sintaxe
 
-## FEEDBACK / GITHUB ISSUES
+### 7. extraResources glob nao funcionava no Mac
+- Problema: glob "organizador-postech-backend*" nao copiava corretamente
+- Solucao: extraResources separado por plataforma (win/mac/linux) com nomes explicitos
+- Mac/Linux: binario sem .exe, Windows: binario com .exe
 
-### Painel panel-feedback (~linha 267)
-- Card adicionado no panel-extras com icone 📨
-- Formulario com: tipo (bug/feature/feedback), titulo, descricao
-- Info do sistema preenchida automaticamente (versao, plataforma, SO, Electron, Node)
-- Botao "Enviar Feedback" abre GitHub Issues em nova aba com URL pre-preenchida
-- Botao "Cancelar" volta para panel-extras
+### 8. Mac icon nao encontrado
+- Problema: assets/icon.icns nunca existia
+- Solucao: Mac usa assets/icon.png (256x256) em vez de .icns
 
-### Funcoes JavaScript
-- `getSystemInfo()` — coleta versao, plataforma, SO, Electron, Node
-- `submitFeedback()` — valida campos, monta URL do GitHub, abre no navegador
-- `initFeedbackForm()` — atualiza div de info do sistema ao abrir painel
-- Chamada via `showPanel('panel-feedback')` com `setTimeout(initFeedbackForm, 100)`
+### 9. Linux AppImage nao gerava
+- Problema: faltam dependencias (libfuse2, fakeroot)
+- Solucao: step "Install Linux build dependencies" adicionado
 
-### URL do GitHub
-- Formato: `https://github.com/GITHUB_REPO/issues/new?title=&body=&labels=`
-- Labels: bug (para bug), enhancement (para feature), feedback (para geral)
-- Prefixo do titulo: [BUG], [FEATURE] ou [FEEDBACK]
+### 10. GH_TOKEN nao chegava no Mac runner
+- Problema: env do job nao propagava corretamente
+- Solucao: GH_TOKEN passado via ${{ github.token }} (token automatico do GHA)
 
 ## SESSION LOG
 
@@ -183,22 +213,23 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-19: Correcao de ConfigApp no Rust - removido rename_all, adicionado #[serde(alias)]
 - 2026-06-19: loadConfig e DOMContentLoaded agora verificam ambos os formatos (snake_case + camelCase)
 - 2026-06-19: Correcao de colorProfiles/activeProfile no DOMContentLoaded
-- 2026-06-19: TODAS as configurações (Comportamento, Aparência, Versões, Relatório, Cores) agora persistem corretamente ao reiniciar o app
-- 2026-06-19: Correcao de regex no extractPathInfo (barras invertidas duplicadas)
-- 2026-06-19: Correcao de ConfigApp no Rust - removido rename_all, adicionado #[serde(alias)]
-- 2026-06-19: loadConfig e DOMContentLoaded agora verificam ambos os formatos (snake_case + camelCase)
-- 2026-06-19: Correcao de colorProfiles/activeProfile no DOMContentLoaded
+- 2026-06-19: TODAS as configurações persistem corretamente ao reiniciar o app
 - 2026-06-19: Adicionado painel de Feedback/GitHub Issues no Extras
 - 2026-06-19: Funcoes getSystemInfo(), submitFeedback(), initFeedbackForm() implementadas
 - 2026-06-19: Configurado electron-builder para publicacao no GitHub Releases
 - 2026-06-19: Implementado auto-update com electron-updater (verificacao a cada 30min)
 - 2026-06-19: Adicionados handlers IPC: check-for-updates, download-update, quit-and-install, open-url
 - 2026-06-19: Adicionados listeners de eventos: update-available, update-downloaded, update-error
-- 2026-06-19: package.json atualizado com scripts de build e release (dev/prod)
+- 2026-06-19: package.json atualizado com scripts de build e release
 - 2026-06-19: preload.js atualizado com APIs de update e openUrl
 - 2026-06-19: GITHUB_REPO atualizado para DyFuchs/Ferramentas_POSTECH_Electron
 - 2026-06-19: Titulo do painel de Backup simplificado para "8 • Backup"
 - 2026-06-19: Titulo do painel de Feedback adicionado ao mapa de titulos
 - 2026-06-19: Nome do app mudado de "Organizador" para "Ferramentas POSTECH" em todos os arquivos
-- 2026-06-19: GH_TOKEN corrigido no workflow Mac (env no step)
 - 2026-06-19: Versao alinhada para 0.1.0 em todo o código
+- 2026-06-23: extraResources separado por plataforma (win/mac/linux) com nomes explicitos
+- 2026-06-23: Mac icon corrigido para assets/icon.png (em vez de .icns)
+- 2026-06-23: Linux build dependencies adicionadas (libfuse2, fakeroot)
+- 2026-06-23: Workflow simplificado com job unico por plataforma
+- 2026-06-23: Release draft: false (publicada imediatamente)
+- 2026-06-23: Problema de "Backend Rust não está rodando" no Mac resolvido (extraResources por plataforma)

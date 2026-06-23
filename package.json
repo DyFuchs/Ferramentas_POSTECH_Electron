@@ -1,5 +1,5 @@
 {
-  "name": "organizador-postech",
+  "name": "ferramentas-postech",
   "version": "0.1.0",
   "author": {
     "name": "Diana Fuchs Santos",
@@ -11,16 +11,14 @@
     "build:win": "electron-builder --win --x64 --publish never",
     "build:mac": "electron-builder --mac --x64 --publish never",
     "build:linux": "electron-builder --linux --x64 --publish never",
-    "build:all": "electron-builder --win --mac --linux --x64 --publish never",
-    "release:dev": "electron-builder --win --x64 --publish always --preRelease",
-    "release:win": "electron-builder --win --x64 --publish always"
+    "release": "electron-builder --win --mac --linux --x64 --publish always"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/DyFuchs/Ferramentas_POSTECH_Electron.git"
   },
   "build": {
-    "appId": "com.postech.organizador",
+    "appId": "com.postech.ferramentas",
     "productName": "Ferramentas POSTECH",
     "directories": {
       "output": "dist"
@@ -33,8 +31,12 @@
     ],
     "extraResources": [
       {
-        "from": "rust-backend/target/release/organizador-postech*",
-        "to": "backend/"
+        "from": "rust-backend/target/release/organizador-postech-backend.exe",
+        "to": "backend/organizador-postech-backend.exe"
+      },
+      {
+        "from": "rust-backend/target/release/organizador-postech-backend",
+        "to": "backend/organizador-postech-backend"
       }
     ],
     "win": {
@@ -51,7 +53,13 @@
     },
     "mac": {
       "target": "dmg",
-      "icon": "assets/icon.icns",
+      "icon": "assets/icon.png",
+      "extraResources": [
+        {
+          "from": "rust-backend/target/release/organizador-postech-backend",
+          "to": "backend/organizador-postech-backend"
+        }
+      ],
       "publish": [
         {
           "provider": "github",
@@ -62,9 +70,14 @@
       ]
     },
     "linux": {
-      "target": ["AppImage", "deb"],
-      "icon": "assets/icon.png",
+      "target": "AppImage",
       "category": "Utility",
+      "extraResources": [
+        {
+          "from": "rust-backend/target/release/organizador-postech-backend",
+          "to": "backend/organizador-postech-backend"
+        }
+      ],
       "publish": [
         {
           "provider": "github",

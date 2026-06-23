@@ -38,12 +38,10 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust + Electron
-        run: |
-          cd rust-backend
-          cargo build --release
-          cd ..
-          npx electron-builder --mac --x64 --publish always
+      - name: Build Rust backend
+        run: cd rust-backend && cargo build --release
+      - name: Build Electron
+        run: npx electron-builder --mac --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
@@ -61,18 +59,20 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust + Electron
+      - name: Install Linux build dependencies
         run: |
-          cd rust-backend
-          cargo build --release
-          cd ..
-          npx electron-builder --linux --x64 --publish always
+          sudo apt-get update
+          sudo apt-get install -y libfuse2 fakeroot rpm
+      - name: Build Rust backend
+        run: cd rust-backend && cargo build --release
+      - name: Build Electron
+        run: npx electron-builder --linux --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: dist/*.{AppImage,deb}
+          path: dist/*.AppImage
 
   upload-release:
     needs: [build-win, build-mac, build-linux]
@@ -90,8 +90,8 @@ jobs:
       - name: Add artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*.{exe,dmg,AppImage,deb}
+          files: artifacts/*.{exe,dmg,AppImage}
           fail_on_unmatched_files: false
-          draft: true
+          draft: false
         env:
           GITHUB_TOKEN: ${{ github.token }}
