@@ -29,19 +29,15 @@
       "src/**/*",
       "assets/**/*"
     ],
-    "extraResources": [
-      {
-        "from": "rust-backend/target/release/organizador-postech-backend.exe",
-        "to": "backend/organizador-postech-backend.exe"
-      },
-      {
-        "from": "rust-backend/target/release/organizador-postech-backend",
-        "to": "backend/organizador-postech-backend"
-      }
-    ],
     "win": {
       "target": "nsis",
       "icon": "assets/icon.ico",
+      "extraResources": [
+        {
+          "from": "rust-backend/target/release/organizador-postech-backend.exe",
+          "to": "backend/organizador-postech-backend.exe"
+        }
+      ],
       "publish": [
         {
           "provider": "github",
