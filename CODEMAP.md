@@ -228,8 +228,10 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-19: Nome do app mudado de "Organizador" para "Ferramentas POSTECH" em todos os arquivos
 - 2026-06-19: Versao alinhada para 0.1.0 em todo o código
 - 2026-06-23: extraResources separado por plataforma (win/mac/linux) com nomes explicitos
-- 2026-06-23: Mac icon corrigido para assets/icon.png (em vez de .icns)
-- 2026-06-23: Linux build dependencies adicionadas (libfuse2, fakeroot)
-- 2026-06-23: Workflow simplificado com job unico por plataforma
-- 2026-06-23: Release draft: false (publicada imediatamente)
-- 2026-06-23: Problema de "Backend Rust não está rodando" no Mac resolvido (extraResources por plataforma)
+- 2026-06-23: Mac Rust x86_64 para Intel Mac + cp para target/release/
+- 2026-06-23: Mac icon redimensionado para 512x512
+- 2026-06-23: Linux build dependencies adicionadas (libfuse2, fakeroot, rpm)
+- 2026-06-23: Workflow com publish always em todas as plataformas
+- 2026-06-23: Release draft: false
+- 2026-06-23: sendToRust com retry (3 tentativas) para race condition
+- 2026-06-23: Análise crítica: problemas identificados e corrigidos antes de executar

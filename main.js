@@ -87,18 +87,30 @@ function startRustBackend() {
   });
 }
 
-function sendToRust(payload) {
+function sendToRust(payload, retries) {
+  if (retries === undefined) retries = 3;
   if (rustBackend && rustBackend.stdin.writable) {
     const json = JSON.stringify(payload);
     console.log('[DEBUG] Enviando para Rust:', json);
-    rustBackend.stdin.write(json + '\n');
+    try {
+      rustBackend.stdin.write(json + '\n');
+    } catch(e) {
+      console.error('[ERRO] Falha ao enviar para Rust:', e.message);
+      if (retries > 0) {
+        setTimeout(function() { sendToRust(payload, retries - 1); }, 1000);
+      } else if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('rust-message', {
+          type: 'error', id: payload.id, message: 'Backend Rust não está rodando'
+        });
+      }
+    }
   } else {
     console.error('[ERRO] Backend Rust não está rodando');
-    if (mainWindow && !mainWindow.isDestroyed()) {
+    if (retries > 0) {
+      setTimeout(function() { sendToRust(payload, retries - 1); }, 1000);
+    } else if (mainWindow && !mainWindow.isDestroyed()) {
       mainWindow.webContents.send('rust-message', {
-        type: 'error',
-        id: payload.id,
-        message: 'Backend Rust não está rodando'
+        type: 'error', id: payload.id, message: 'Backend Rust não está rodando'
       });
     }
   }
