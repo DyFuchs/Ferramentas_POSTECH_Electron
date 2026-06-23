@@ -15,10 +15,10 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust backend
-        run: cd rust-backend && cargo build --release
-      - name: Build Electron (publish)
-        run: npx electron-builder --win --x64 --publish always
+      - name: Build Rust + Electron
+        run: |
+          cd rust-backend && cargo build --release
+          npx electron-builder --win --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
@@ -35,11 +35,12 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust backend
-        run: cd rust-backend && cargo build --release
-      - name: Build Electron (no publish)
-        run: npx electron-builder --mac --x64 --publish never
+      - name: Build Rust + Electron
+        run: |
+          cd rust-backend && cargo build --release
+          npx electron-builder --mac --x64 --publish always
         env:
+          GH_TOKEN: ${{ github.token }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - uses: actions/upload-artifact@v4
         with:
@@ -55,16 +56,18 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust backend
-        run: cd rust-backend && cargo build --release
-      - name: Build Electron (no publish)
-        run: npx electron-builder --linux --x64 --publish never
+      - name: Build Rust + Electron
+        run: |
+          cd rust-backend && cargo build --release
+          npx electron-builder --linux --x64 --publish always
+        env:
+          GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
-          path: dist/*.AppImage
+          path: dist/*.{AppImage,deb}
 
-  release:
+  upload-release:
     needs: [build-win, build-mac, build-linux]
     runs-on: ubuntu-latest
     permissions:
@@ -77,11 +80,11 @@ jobs:
           merge-multiple: true
       - name: List downloaded files
         run: ls -la artifacts/
-      - name: Create GitHub Release
+      - name: Add artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*
+          files: artifacts/*.{exe,dmg,AppImage,deb}
+          fail_on_unmatched_files: false
           draft: true
-          tag_name: ${{ github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
