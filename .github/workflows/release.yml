@@ -8,6 +8,9 @@ on:
 jobs:
   build-win:
     runs-on: windows-latest
+    defaults:
+      run:
+        shell: cmd
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -15,10 +18,10 @@ jobs:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
       - run: npm install
-      - name: Build Rust + Electron
-        run: |
-          cd rust-backend && cargo build --release
-          npx electron-builder --win --x64 --publish always
+      - name: Build Rust backend
+        run: cd rust-backend && cargo build --release
+      - name: Build Electron
+        run: npx electron-builder --win --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
       - uses: actions/upload-artifact@v4
@@ -37,7 +40,9 @@ jobs:
       - run: npm install
       - name: Build Rust + Electron
         run: |
-          cd rust-backend && cargo build --release
+          cd rust-backend
+          cargo build --release
+          cd ..
           npx electron-builder --mac --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
@@ -58,7 +63,9 @@ jobs:
       - run: npm install
       - name: Build Rust + Electron
         run: |
-          cd rust-backend && cargo build --release
+          cd rust-backend
+          cargo build --release
+          cd ..
           npx electron-builder --linux --x64 --publish always
         env:
           GH_TOKEN: ${{ github.token }}
