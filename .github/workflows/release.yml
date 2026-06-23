@@ -14,13 +14,13 @@ jobs:
         include:
           - os: windows-latest
             platform: win
-            cmd: npx electron-builder --win --x64 --publish always
+            shell: powershell
           - os: macos-latest
             platform: mac
-            cmd: npx electron-builder --mac --x64 --publish always
+            shell: bash
           - os: ubuntu-latest
             platform: linux
-            cmd: npx electron-builder --linux --x64 --publish always
+            shell: bash
 
     steps:
       - name: Checkout code
@@ -41,10 +41,14 @@ jobs:
         run: |
           cd rust-backend
           cargo build --release
-        shell: bash
 
-      - name: Build Electron app
-        run: ${{ matrix.cmd }}
+      - name: Build and publish
+        shell: ${{ matrix.shell }}
+        run: |
+          if [ "${{ matrix.platform }}" = "mac" ]; then
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          fi
+          npx electron-builder --${{ matrix.platform }} --x64 --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
