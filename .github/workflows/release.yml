@@ -8,9 +8,6 @@ on:
 jobs:
   build-win:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: cmd
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,9 +34,13 @@ jobs:
         with:
           node-version: '20'
       - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-apple-darwin
       - run: npm install
-      - name: Build Rust backend
-        run: cd rust-backend && cargo build --release
+      - name: Build Rust backend (x86_64 for Rosetta compatibility)
+        run: cd rust-backend && cargo build --release --target x86_64-apple-darwin
+      - name: Copy binary to expected location
+        run: cp rust-backend/target/x86_64-apple-darwin/release/organizador-postech-backend rust-backend/target/release/organizador-postech-backend
       - name: Build Electron
         run: npx electron-builder --mac --x64 --publish always
         env:
@@ -62,7 +63,7 @@ jobs:
       - name: Install Linux build dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libfuse2 fakeroot rpm
+          sudo apt-get install -y libfuse2 fakeroot
       - name: Build Rust backend
         run: cd rust-backend && cargo build --release
       - name: Build Electron
