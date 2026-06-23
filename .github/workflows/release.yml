@@ -14,13 +14,13 @@ jobs:
         include:
           - os: windows-latest
             platform: win
-            shell: powershell
           - os: macos-latest
             platform: mac
-            shell: bash
           - os: ubuntu-latest
             platform: linux
-            shell: bash
+
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -38,19 +38,17 @@ jobs:
         run: npm install
 
       - name: Build Rust backend
+        shell: bash
         run: |
           cd rust-backend
           cargo build --release
 
+      - name: Disable code signing (Mac only)
+        if: matrix.platform == 'mac'
+        run: echo "CSC_IDENTITY_AUTO_DISCOVERY=false" >> $GITHUB_ENV
+
       - name: Build and publish
-        shell: ${{ matrix.shell }}
-        run: |
-          if [ "${{ matrix.platform }}" = "mac" ]; then
-            export CSC_IDENTITY_AUTO_DISCOVERY=false
-          fi
-          npx electron-builder --${{ matrix.platform }} --x64 --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: npx electron-builder --${{ matrix.platform }} --x64 --publish always
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
