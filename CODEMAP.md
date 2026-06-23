@@ -138,7 +138,9 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 
 ### Workflow de Release (.github/workflows/release.yml)
 - 3 jobs paralelos: build-win, build-mac, build-linux
-- Todos com --publish always (gera latest.yml, latest-mac.yml, latest-linux.yml)
+- Windows: --publish always (gera latest.yml para auto-update)
+- Mac: --publish always (gera latest-mac.yml para auto-update)
+- Linux: --publish always (gera latest-linux.yml para auto-update)
 - Job upload-release: baixa artifacts e adiciona a release
 - draft: false (release publicada imediatamente)
 - GH_TOKEN: ${{ github.token }} (token automatico do GitHub Actions)
@@ -147,6 +149,16 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - Windows: rust-backend/target/release/organizador-postech-backend.exe -> backend/
 - Mac: rust-backend/target/release/organizador-postech-backend -> backend/
 - Linux: rust-backend/target/release/organizador-postech-backend -> backend/
+
+### Mac build (workflow)
+- Rust compila com --target x86_64-apple-darwin (para compatibilidade com Intel Mac)
+- Binario copiado de target/x86_64-apple-darwin/release/ para target/release/
+- Icon: assets/icon.png (512x512)
+- Code signing desabilitado: CSC_IDENTITY_AUTO_DISCOVERY=false
+
+### Linux build (workflow)
+- Dependencias: libfuse2, fakeroot, rpm
+- Target: AppImage
 
 ## PROBLEMAS CONHECIDOS E SOLUCOES
 
@@ -185,7 +197,7 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 
 ### 8. Mac icon nao encontrado
 - Problema: assets/icon.icns nunca existia
-- Solucao: Mac usa assets/icon.png (256x256) em vez de .icns
+- Solucao: Mac usa assets/icon.png (512x512) em vez de .icns
 
 ### 9. Linux AppImage nao gerava
 - Problema: faltam dependencias (libfuse2, fakeroot)
@@ -194,6 +206,19 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 ### 10. GH_TOKEN nao chegava no Mac runner
 - Problema: env do job nao propagava corretamente
 - Solucao: GH_TOKEN passado via ${{ github.token }} (token automatico do GHA)
+
+### 11. Mac Rust binary arquitetura errada (erro -86)
+- Problema: Mac runner e Apple Silicon (arm64), mas o Mac do usuario e Intel (x86_64)
+- electron-builder compilava Rust para arm64, que nao roda em Mac Intel
+- Solucao: cargo build --release --target x86_64-apple-darwin + cp para target/release/
+
+### 12. Auto-update Mac: latest-mac.yml nao gerado
+- Problema: Mac build com --publish always pode falhar se release ja existir
+- Solucao: workflow atualizado para gerar latest-mac.yml corretamente
+
+### 13. Race condition Rust no Mac
+- Problema: "Backend Rust não está rodando" intermitente
+- Solucao: sendToRust com retry (3 tentativas) e delay de 1s
 
 ## SESSION LOG
 
@@ -235,3 +260,8 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-23: Release draft: false
 - 2026-06-23: sendToRust com retry (3 tentativas) para race condition
 - 2026-06-23: Análise crítica: problemas identificados e corrigidos antes de executar
+- 2026-06-23: Mac Rust corrigido para x86_64 (erro -86 em Mac Intel)
+- 2026-06-23: Mac build com --target x86_64-apple-darwin + cp para target/release/
+- 2026-06-23: Mac icon 512x512 (requisito electron-builder para Mac)
+- 2026-06-23: Linux com apt-get install libfuse2 fakeroot rpm
+- 2026-06-23: sendToRust com retry para race condition no Mac
