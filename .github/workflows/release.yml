@@ -8,9 +8,6 @@ on:
 jobs:
   build-win:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,9 +28,6 @@ jobs:
 
   build-mac:
     runs-on: macos-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -54,9 +48,6 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: .
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -76,15 +67,21 @@ jobs:
   release:
     needs: [build-win, build-mac, build-linux]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
-      - name: Download artifacts
+      - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Create Release
+          merge-multiple: true
+      - name: List downloaded files
+        run: ls -la artifacts/
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/**/*.{exe,dmg,AppImage}
+          files: artifacts/*
           draft: true
+          tag_name: ${{ github.ref_name }}
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
