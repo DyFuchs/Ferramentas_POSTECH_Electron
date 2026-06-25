@@ -260,6 +260,8 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-23: Release draft: false
 - 2026-06-23: sendToRust com retry (3 tentativas) para race condition
 - 2026-06-23: Análise crítica: problemas identificados e corrigidos antes de executar
+- 2026-06-25: PROBLEMA 3 — Heredoc EOF no YAML do GitHub Actions causa erro de sintaxe
+- 2026-06-25: Solução: usar write_file em vez de heredoc bash no workflow
 - 2026-06-23: Mac Rust corrigido para x86_64 (erro -86 em Mac Intel)
 - 2026-06-23: Mac build com --target x86_64-apple-darwin + cp para target/release/
 - 2026-06-23: Mac icon 512x512 (requisito electron-builder para Mac)

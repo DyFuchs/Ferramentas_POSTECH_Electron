@@ -31,19 +31,19 @@ jobs:
           EXE_NAME=$(basename "$EXE")
           SHA=$(sha512sum "$EXE" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
-          cat > dist/latest.yml << EOF
-version: 0.1.2
-releaseDate: ${NOW}
-name: Ferramentas POSTECH v0.1.2
-notes: |
-  - Fix: Auto-update para Mac/Linux
-  - Fix: Backend Rust inicializacao (retry)
-  - Fix: Linux AppImage
-  - Fix: Icon 512x512 para Mac
-fileName: ${EXE_NAME}
-url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${EXE_NAME}
-sha512: ${SHA}
-EOF
+          {
+            echo "version: 0.1.2"
+            echo "releaseDate: ${NOW}"
+            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "notes: |"
+            echo "  - Fix: Auto-update para Mac/Linux"
+            echo "  - Fix: Backend Rust inicializacao (retry)"
+            echo "  - Fix: Linux AppImage"
+            echo "  - Fix: Icon 512x512 para Mac"
+            echo "fileName: ${EXE_NAME}"
+            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${EXE_NAME}"
+            echo "sha512: ${SHA}"
+          } > dist/latest.yml
           echo "Generated latest.yml for ${EXE_NAME}"
       - uses: actions/upload-artifact@v4
         with:
@@ -84,18 +84,18 @@ EOF
           DMG_NAME=$(basename "$DMG")
           SHA=$(shasum -a 512 "$DMG" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
-          cat > dist/latest-mac.yml << EOF
-version: 0.1.2
-releaseDate: ${NOW}
-name: Ferramentas POSTECH v0.1.2
-notes: |
-  - Fix: Auto-update para Mac
-  - Fix: Backend Rust inicializacao (retry)
-  - Fix: Mac x86_64 compatibilidade Intel
-fileName: ${DMG_NAME}
-url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${DMG_NAME}
-sha512: ${SHA}
-EOF
+          {
+            echo "version: 0.1.2"
+            echo "releaseDate: ${NOW}"
+            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "notes: |"
+            echo "  - Fix: Auto-update para Mac"
+            echo "  - Fix: Backend Rust inicializacao (retry)"
+            echo "  - Fix: Mac x86_64 compatibilidade Intel"
+            echo "fileName: ${DMG_NAME}"
+            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${DMG_NAME}"
+            echo "sha512: ${SHA}"
+          } > dist/latest-mac.yml
           echo "Generated latest-mac.yml for ${DMG_NAME}"
       - uses: actions/upload-artifact@v4
         with:
@@ -132,18 +132,18 @@ EOF
           APPIMAGE_NAME=$(basename "$APPIMAGE")
           SHA=$(sha512sum "$APPIMAGE" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
-          cat > dist/latest-linux.yml << EOF
-version: 0.1.2
-releaseDate: ${NOW}
-name: Ferramentas POSTECH v0.1.2
-notes: |
-  - Fix: Auto-update para Linux
-  - Fix: Backend Rust inicializacao (retry)
-  - Fix: Linux AppImage
-fileName: ${APPIMAGE_NAME}
-url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${APPIMAGE_NAME}
-sha512: ${SHA}
-EOF
+          {
+            echo "version: 0.1.2"
+            echo "releaseDate: ${NOW}"
+            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "notes: |"
+            echo "  - Fix: Auto-update para Linux"
+            echo "  - Fix: Backend Rust inicializacao (retry)"
+            echo "  - Fix: Linux AppImage"
+            echo "fileName: ${APPIMAGE_NAME}"
+            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${APPIMAGE_NAME}"
+            echo "sha512: ${SHA}"
+          } > dist/latest-linux.yml
           echo "Generated latest-linux.yml for ${APPIMAGE_NAME}"
       - uses: actions/upload-artifact@v4
         with:

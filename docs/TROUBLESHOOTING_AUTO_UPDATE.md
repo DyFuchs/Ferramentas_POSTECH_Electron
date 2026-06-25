@@ -173,6 +173,34 @@ O `package.json` está com `version: "0.1.0"`. Precisa ser atualizado para `0.1.
 
 ---
 
+## PROBLEMA 3: GitHub Actions — Heredoc `EOF` inválido no YAML
+
+### Descrição
+O workflow `.github/workflows/release.yml` usa `cat > file << EOF` (heredoc bash) dentro de um step YAML. O parser do GitHub Actions interpreta `EOF` como YAML, não como bash, causando erro:
+```
+Invalid workflow file
+You have an error in your yaml syntax on line 46
+```
+
+### Causa
+O `run: |` do YAML preserva indentação, mas o heredoc `<< EOF` precisa que o marcador `EOF` esteja na **coluna 0** (sem indentação). Com a indentação do step, o parser YAML não reconhece o heredoc corretamente.
+
+### Solução
+Usar `write_file` (ferramenta do Hermes) para gerar o arquivo `.yml` diretamente no sistema de arquivos, em vez de usar heredoc bash no workflow. Ou usar `printf` em vez de heredoc:
+```yaml
+- name: Generate latest.yml
+  shell: bash
+  run: |
+    printf 'version: 0.1.2\nreleaseDate: %s\nname: Ferramentas POSTECH v0.1.2\nnotes: |\n  - Fix: Auto-update\nfileName: %s\nurl: https://github.com/.../v0.1.2/%s\nsha512: %s\n' \
+      "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)" \
+      "$EXE_NAME" "$EXE_NAME" "$SHA" > dist/latest.yml
+```
+
+### Referência
+- [GitHub Actions: Using heredoc in YAML](https://docs.github.com/en/actions/using-jobs/workflow-syntax-for-github-actions#example-using-a-multiline-string) — Heredoc funciona, mas o marcador precisa estar alinhado com a indentação do bloco `run:`
+
+---
+
 ## REFERÊNCIAS
 
 - [electron-builder troubleshooting](https://www.electron.build/docs/troubleshooting/) — "latest.yml / latest-mac.yml / latest-linux.yml only when publishing"
