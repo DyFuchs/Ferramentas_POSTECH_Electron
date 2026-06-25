@@ -27,24 +27,28 @@ jobs:
       - name: Generate latest.yml
         shell: bash
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           EXE=$(ls dist/*.exe | head -1)
           EXE_NAME=$(basename "$EXE")
           SHA=$(sha512sum "$EXE" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          DOWNLOAD_URL="https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/${TAG_NAME}/${EXE_NAME}"
           {
-            echo "version: 0.1.2"
+            echo "version: ${VERSION}"
             echo "releaseDate: ${NOW}"
-            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "name: Ferramentas POSTECH v${VERSION}"
             echo "notes: |"
-            echo "  - Fix: Auto-update para Mac/Linux"
-            echo "  - Fix: Backend Rust inicializacao (retry)"
-            echo "  - Fix: Linux AppImage"
-            echo "  - Fix: Icon 512x512 para Mac"
+            echo "  - Fix: lerRelatorio backend command"
+            echo "  - Fix: Report multi-format (txt, csv, html)"
+            echo "  - Add: Interactive report table with copy buttons"
+            echo "  - Fix: Version sync across all files"
+            echo "  - Fix: APP_VERSION declaration restored"
             echo "fileName: ${EXE_NAME}"
-            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${EXE_NAME}"
+            echo "url: ${DOWNLOAD_URL}"
             echo "sha512: ${SHA}"
           } > dist/latest.yml
-          echo "Generated latest.yml for ${EXE_NAME}"
+          echo "Generated latest.yml for ${EXE_NAME} (v${VERSION})"
       - uses: actions/upload-artifact@v4
         with:
           name: win-build
@@ -80,23 +84,27 @@ jobs:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
       - name: Generate latest-mac.yml
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           DMG=$(ls dist/*.dmg | head -1)
           DMG_NAME=$(basename "$DMG")
           SHA=$(shasum -a 512 "$DMG" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          DOWNLOAD_URL="https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/${TAG_NAME}/${DMG_NAME}"
           {
-            echo "version: 0.1.2"
+            echo "version: ${VERSION}"
             echo "releaseDate: ${NOW}"
-            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "name: Ferramentas POSTECH v${VERSION}"
             echo "notes: |"
-            echo "  - Fix: Auto-update para Mac"
-            echo "  - Fix: Backend Rust inicializacao (retry)"
-            echo "  - Fix: Mac x86_64 compatibilidade Intel"
+            echo "  - Fix: lerRelatorio backend command"
+            echo "  - Fix: Report multi-format (txt, csv, html)"
+            echo "  - Add: Interactive report table with copy buttons"
+            echo "  - Fix: Version sync across all files"
             echo "fileName: ${DMG_NAME}"
-            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${DMG_NAME}"
+            echo "url: ${DOWNLOAD_URL}"
             echo "sha512: ${SHA}"
           } > dist/latest-mac.yml
-          echo "Generated latest-mac.yml for ${DMG_NAME}"
+          echo "Generated latest-mac.yml for ${DMG_NAME} (v${VERSION})"
       - uses: actions/upload-artifact@v4
         with:
           name: mac-build
@@ -128,23 +136,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
       - name: Generate latest-linux.yml
         run: |
+          VERSION=$(node -p "require('./package.json').version")
           APPIMAGE=$(ls dist/*.AppImage | head -1)
           APPIMAGE_NAME=$(basename "$APPIMAGE")
           SHA=$(sha512sum "$APPIMAGE" | cut -d' ' -f1)
           NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          DOWNLOAD_URL="https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/${TAG_NAME}/${APPIMAGE_NAME}"
           {
-            echo "version: 0.1.2"
+            echo "version: ${VERSION}"
             echo "releaseDate: ${NOW}"
-            echo "name: Ferramentas POSTECH v0.1.2"
+            echo "name: Ferramentas POSTECH v${VERSION}"
             echo "notes: |"
-            echo "  - Fix: Auto-update para Linux"
-            echo "  - Fix: Backend Rust inicializacao (retry)"
-            echo "  - Fix: Linux AppImage"
+            echo "  - Fix: lerRelatorio backend command"
+            echo "  - Fix: Report multi-format (txt, csv, html)"
+            echo "  - Add: Interactive report table with copy buttons"
+            echo "  - Fix: Version sync across all files"
             echo "fileName: ${APPIMAGE_NAME}"
-            echo "url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${APPIMAGE_NAME}"
+            echo "url: ${DOWNLOAD_URL}"
             echo "sha512: ${SHA}"
           } > dist/latest-linux.yml
-          echo "Generated latest-linux.yml for ${APPIMAGE_NAME}"
+          echo "Generated latest-linux.yml for ${APPIMAGE_NAME} (v${VERSION})"
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
