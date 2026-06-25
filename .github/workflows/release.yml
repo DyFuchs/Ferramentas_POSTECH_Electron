@@ -20,14 +20,40 @@ jobs:
       - run: npm install
       - name: Build Rust backend
         run: cd rust-backend && cargo build --release
-      - name: Build and publish Electron
-        run: npx electron-builder --win --x64 --publish always
+      - name: Build Electron (no publish)
+        run: npx electron-builder --win --x64 --publish never
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Generate latest.yml
+        shell: bash
+        run: |
+          EXE=$(ls dist/*.exe | head -1)
+          EXE_NAME=$(basename "$EXE")
+          SHA=$(sha512sum "$EXE" | cut -d' ' -f1)
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          cat > dist/latest.yml << EOF
+version: 0.1.2
+releaseDate: ${NOW}
+name: Ferramentas POSTECH v0.1.2
+notes: |
+  - Fix: Auto-update para Mac/Linux
+  - Fix: Backend Rust inicializacao (retry)
+  - Fix: Linux AppImage
+  - Fix: Icon 512x512 para Mac
+fileName: ${EXE_NAME}
+url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${EXE_NAME}
+sha512: ${SHA}
+EOF
+          echo "Generated latest.yml for ${EXE_NAME}"
       - uses: actions/upload-artifact@v4
         with:
           name: win-build
           path: dist/*.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: win-metadata
+          path: dist/latest.yml
 
   build-mac:
     runs-on: macos-latest
@@ -40,22 +66,46 @@ jobs:
         with:
           targets: x86_64-apple-darwin
       - run: npm install
-      - name: Build Rust backend (x86_64 for Intel Mac compatibility)
+      - name: Build Rust backend (x86_64 for Intel Mac)
         run: |
           cd rust-backend
           rustup target add x86_64-apple-darwin
           cargo build --release --target x86_64-apple-darwin
           mkdir -p target/release
           cp target/x86_64-apple-darwin/release/organizador-postech-backend target/release/organizador-postech-backend
-      - name: Build and publish Electron
-        run: npx electron-builder --mac --x64 --publish always
+      - name: Build Electron (no publish)
+        run: npx electron-builder --mac --x64 --publish never
         env:
           GH_TOKEN: ${{ github.token }}
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Generate latest-mac.yml
+        run: |
+          DMG=$(ls dist/*.dmg | head -1)
+          DMG_NAME=$(basename "$DMG")
+          SHA=$(shasum -a 512 "$DMG" | cut -d' ' -f1)
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          cat > dist/latest-mac.yml << EOF
+version: 0.1.2
+releaseDate: ${NOW}
+name: Ferramentas POSTECH v0.1.2
+notes: |
+  - Fix: Auto-update para Mac
+  - Fix: Backend Rust inicializacao (retry)
+  - Fix: Mac x86_64 compatibilidade Intel
+fileName: ${DMG_NAME}
+url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${DMG_NAME}
+sha512: ${SHA}
+EOF
+          echo "Generated latest-mac.yml for ${DMG_NAME}"
       - uses: actions/upload-artifact@v4
         with:
           name: mac-build
           path: dist/*.dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mac-metadata
+          path: dist/latest-mac.yml
 
   build-linux:
     runs-on: ubuntu-latest
@@ -72,14 +122,38 @@ jobs:
           sudo apt-get install -y libfuse2 fakeroot rpm
       - name: Build Rust backend
         run: cd rust-backend && cargo build --release
-      - name: Build and publish Electron
-        run: npx electron-builder --linux --x64 --publish always
+      - name: Build Electron (no publish)
+        run: npx electron-builder --linux --x64 --publish never
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Generate latest-linux.yml
+        run: |
+          APPIMAGE=$(ls dist/*.AppImage | head -1)
+          APPIMAGE_NAME=$(basename "$APPIMAGE")
+          SHA=$(sha512sum "$APPIMAGE" | cut -d' ' -f1)
+          NOW=$(date -u +%Y-%m-%dT%H:%M:%S.000Z)
+          cat > dist/latest-linux.yml << EOF
+version: 0.1.2
+releaseDate: ${NOW}
+name: Ferramentas POSTECH v0.1.2
+notes: |
+  - Fix: Auto-update para Linux
+  - Fix: Backend Rust inicializacao (retry)
+  - Fix: Linux AppImage
+fileName: ${APPIMAGE_NAME}
+url: https://github.com/DyFuchs/Ferramentas_POSTECH_Electron/releases/download/v0.1.2/${APPIMAGE_NAME}
+sha512: ${SHA}
+EOF
+          echo "Generated latest-linux.yml for ${APPIMAGE_NAME}"
       - uses: actions/upload-artifact@v4
         with:
           name: linux-build
           path: dist/*.AppImage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-metadata
+          path: dist/latest-linux.yml
 
   upload-release:
     needs: [build-win, build-mac, build-linux]
@@ -95,7 +169,7 @@ jobs:
       - name: Add artifacts to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: artifacts/*.{exe,dmg,AppImage}
+          files: artifacts/*
           fail_on_unmatched_files: false
           draft: false
         env:
