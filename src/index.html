@@ -15,7 +15,7 @@
 
 <div class="sidebar">
   <div class="sidebar-header">
-    <div class="sidebar-logo">FERRAMENTAS POSTECH<br><span>POSTECH — FIAP • v<span id="sidebar-version">1.0.0</span></span></div>
+    <div class="sidebar-logo">FERRAMENTAS POSTECH<br><span>POSTECH — FIAP • v<span id="sidebar-version">0.1.3</span></span></div>
   </div>
   <nav class="sidebar-nav">
     <div class="nav-section">Operações</div>
@@ -182,11 +182,169 @@
       </table>
     </div>
   </div>
-</div>) {
-    return new Promise((resolve, reject) => {
-        if (!electronAvailable) {
-            reject(new Error('Electron API não disponível'));
-            return;
+</div>
+    </div>
+
+    <div class="panel" id="panel-projects">
+      <div style="max-width:750px">
+        <div class="section-title">📁 Gerenciador de Projetos</div>
+        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Salve e carregue estados da aplicação. Cada projeto inclui o caminho da pasta, configurações e informações extraídas.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem">
+          <button class="btn btn-primary btn-sm" onclick="saveProject()">💾 Salvar Projeto Atual</button>
+          <button class="btn btn-sm" onclick="refreshProjects()">🔄 Atualizar Lista</button>
+        </div>
+        <div class="form-group"><label>Nome do novo projeto (editável):</label><input type="text" id="project-name-input" placeholder="Preencha os campos abaixo e clique em Salvar"></div>
+        <div id="projects-list" style="margin-top:1rem"><div style="color:var(--text-dim);padding:2rem;text-align:center">Nenhum projeto salvo ainda.</div></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-config">
+      <div style="max-width:600px">
+        <div class="section-title">⚙ Configurações</div>
+        <div style="margin-top:1rem">
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-comportamento')"><span>▶</span> Comportamento</div>
+          <div id="cfg-section-comportamento" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Pedir confirmação antes de executar</div></div><input type="checkbox" id="cfg-confirm" checked></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-aparencia')"><span>▶</span> Aparência</div>
+          <div id="cfg-section-aparencia" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Tamanho da fonte</div></div>
+              <select id="cfg-fontsize" onchange="applyFontSettings()">
+                <option value="12">Pequeno (12px)</option>
+                <option value="14" selected>Médio (14px)</option>
+                <option value="16">Grande (16px)</option>
+                <option value="18">Extra Grande (18px)</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Peso da fonte</div></div>
+              <select id="cfg-fontweight" onchange="applyFontSettings()">
+                <option value="400">Normal</option>
+                <option value="600" selected>Semi-Bold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra Bold</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Estilo</div></div>
+              <select id="cfg-fontstyle" onchange="applyFontSettings()">
+                <option value="normal" selected>Normal</option>
+                <option value="italic">Itálico</option>
+              </select>
+            </div>
+            <div class="config-row"><div><div class="config-label">Predefinições</div><div class="config-desc">Estilos rápidos de fonte</div></div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('compact')">Compacto</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('normal')">Normal</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('large')">Grande</button>
+                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('bold')">Bold</button>
+              </div>
+            </div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-perfis')"><span>▶</span> Perfis de Cores</div>
+          <div id="cfg-section-perfis" class="config-section-body" style="display:none">
+            <div id="profiles-editor"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-relatorio')"><span>▶</span> Relatório</div>
+          <div id="cfg-section-relatorio" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Gerar relatório em HTML</div><div class="config-desc">Cria um relatório visual bonito com botões de copiar</div></div><input type="checkbox" id="cfg-report-html" onchange="saveConfig()"></div>
+            <div class="config-row"><div><div class="config-label">Gerar relatório em CSV (Notion optimized)</div><div class="config-desc">Exporta tabela formatada para fácil colagem no Notion</div></div><input type="checkbox" id="cfg-report-csv" onchange="saveConfig()"></div>
+            <div class="config-row"><div><div class="config-label">Gerar relatório em TXT</div><div class="config-desc">Relatório de texto simples</div></div><input type="checkbox" id="cfg-report-txt" onchange="saveConfig()"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-versoes')"><span>▶</span> Versões</div>
+          <div id="cfg-section-versoes" class="config-section-body" style="display:none">
+            <div id="versions-editor"></div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-autosave')"><span>▶</span> Salvamento Automático</div>
+          <div id="cfg-section-autosave" class="config-section-body" style="display:none">
+            <div class="config-row"><div><div class="config-label">Salvar projeto automaticamente</div><div class="config-desc">Salva o estado atual periodicamente</div></div>
+              <select id="cfg-autosave" onchange="updateAutoSaveSetting()">
+                <option value="0">Desligado</option>
+                <option value="1">A cada 1 min</option>
+                <option value="5">A cada 5 min</option>
+                <option value="10" selected>A cada 10 min</option>
+                <option value="15">A cada 15 min</option>
+                <option value="20">A cada 20 min</option>
+              </select>
+            </div>
+          </div>
+          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-atalhos')"><span>▶</span> Atalhos de Teclado</div>
+          <div id="cfg-section-atalhos" class="config-section-body" style="display:none">
+            <div id="shortcuts-editor"></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:1.5rem"><button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-extras">
+      <div class="action-grid">
+        <div class="action-card" onclick="showPanel('panel-credits')"><div class="card-icon">ℹ</div><h3>Créditos</h3><p>Informações sobre o desenvolvedor e versão</p></div>
+        <div class="action-card" onclick="showPanel('panel-documentation')"><div class="card-icon">📖</div><h3>Documentação</h3><p>Guia detalhado de uso da ferramenta</p></div>
+        <div class="action-card" onclick="startTutorial()"><div class="card-icon">🎓</div><h3>Tutorial Guiado</h3><p>Passo a passo interativo pela aplicação</p></div>
+        <div class="action-card" onclick="showPanel('panel-backup')"><div class="card-icon">💾</div><h3>Backup / Restauração</h3><p>Exportar e importar configurações e projetos</p></div>
+        <div class="action-card" onclick="showPanel('panel-feedback')"><div class="card-icon">📨</div><h3>Feedback / Reportar Bug</h3><p>Envie sugestões, reporte problemas ou dê feedback</p></div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-credits">
+      <div style="text-align:center;padding:3rem 2rem;max-width:500px;margin:0 auto">
+        <div style="font-weight:800;font-size:1.4rem;color:var(--primary);text-transform:uppercase;margin-bottom:.5rem">FERRAMENTAS POSTECH</div>
+        <div style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem">POSTECH — FIAP</div>
+        <div style="font-size:.72rem;opacity:.4;margin-bottom:2rem">Versão <span id="credits-version">0.1.3</span> • Electron + Rust • 2026</div>
+        <div style="border-top:1px solid var(--border);padding-top:1.5rem">
+          <p style="font-weight:700;margin-bottom:.3rem">Desenvolvido por Diana Fuchs Santos</p>
+          <p style="opacity:.7;font-size:.85rem">para FIAP/POSTECH a partir de Maio/2026</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-documentation">
+      <div style="max-width:800px">
+        <div class="section-title">📖 Documentação Completa</div>
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Visão Geral</h3>
+        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">O Organizador de Arquivos POSTECH é uma ferramenta desktop para organização de arquivos de vídeo acadêmicos. Desenvolvida com Electron + Rust, oferece automação completa para padronizar estruturas de pastas, gerar relatórios, emails e planilhas.</p>
+        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Versão</h3>
+        <p style="opacity:.85;line-height:1.7">A versão atual da aplicação é exibida na sidebar e nos Créditos. O número de versão é centralizado em uma variável para facilitar atualizações futuras.</p>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-backup">
+      <div style="max-width:600px">
+        <div class="section-title">💾 Backup / Restauração</div>
+        <p style="opacity:.85;line-height:1.7;margin:1rem 0">Crie um backup completo de todas as suas configurações, atalhos, perfis de cores e projetos salvos.</p>
+        <button class="btn btn-primary" onclick="createBackup()">📦 Criar Backup</button>
+        <button class="btn btn-secondary" style="margin-left:10px" onclick="restoreBackup()">📂 Restaurar Backup</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-feedback">
+      <div style="max-width:600px">
+        <div class="section-title">📨 Enviar Feedback</div>
+        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Sua mensagem será aberta como uma Issue no GitHub.</p>
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Tipo</label>
+          <select id="feedback-type" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
+            <option value="bug">🐛 Bug / Problema</option>
+            <option value="feature">✨ Feature Request</option>
+            <option value="feedback">💬 Feedback Geral</option>
+          </select>
+        </div>
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Título</label>
+          <input type="text" id="feedback-title" placeholder="Descreva brevemente..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
+        </div>
+        <div style="margin-bottom:1rem">
+          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Descrição</label>
+          <textarea id="feedback-body" rows="6" placeholder="Detalhes, passos para reproduzir, esperado vs atual..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md);resize:vertical"></textarea>
+        </div>
+        <div style="display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="submitFeedback()">📨 Enviar Feedback</button>
+          <button class="btn btn-secondary" onclick="showPanel('panel-extras')">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
         }
         const id = Date.now() + Math.random();
         const timeout = setTimeout(() => {
@@ -949,6 +1107,8 @@ initAPI();
 
 <!-- ============ GERAÇÃO DE RELATÓRIO NO NAVEGADOR ============ -->
 <script>
+// ============ APP VERSION ============
+const APP_VERSION = '0.1.3';
 async function generateReportInBrowser(path, grupos, out) {
     var video = document.createElement('video');
     video.preload = 'metadata';
