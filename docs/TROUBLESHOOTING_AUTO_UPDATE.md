@@ -201,9 +201,70 @@ Usar `write_file` (ferramenta do Hermes) para gerar o arquivo `.yml` diretamente
 
 ---
 
+## PROBLEMA 4: `update-not-available` sem feedback visual na UI
+
+### Descrição
+Quando o auto-update verifica e não encontra novas versões, o log mostra `[UPDATER] Atualizado`, mas o usuário não vê nenhuma notificação na UI. Isso confunde — parece que o update falhou, quando na verdade só não há atualização disponível.
+
+### Causa
+O `main.js` tem um listener para `update-not-available` que apenas faz `console.log('[UPDATER] Atualizado')`. Não envia nenhuma mensagem para a janela principal.
+
+### Solução
+Enviar evento IPC `update-not-available` para o renderer e mostrar um toast na UI:
+```javascript
+// main.js
+autoUpdater.on('update-not-available', function(info) {
+  console.log('[UPDATER] Atualizado — versão mais recente:', info.version);
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('update-not-available', info);
+  }
+});
+```
+
+```javascript
+// index.html (renderer)
+window.electronAPI.onUpdateNotAvailable(function(info) {
+  toast('Seu app está na versão mais recente — não foram encontradas atualizações.', 'info');
+});
+```
+
+---
+
+## PROBLEMA 5: EGL `eglQueryDeviceAttribEXT: Bad attribute` repetitivo
+
+### Descrição
+O log mostra repetidamente:
+```
+[PID:0625/HHMMSS.xxxxxx:ERROR:gl_display.cc(497)] EGL Driver message (Error) eglQueryDeviceAttribEXT: Bad attribute.
+```
+
+### Diagnóstico
+- **Não é um bug do app** — é um warning conhecido do Chromium/Electron em Macs com GPU AMD Radeon
+- Afeta Macs com Radeon Pro 560X, 555X, Vega, etc.
+- O erro vem do driver OpenGL/EGL do Chromium ao consultar atributos de GPU não suportados
+- **Não afeta funcionalidade** — o app funciona normalmente
+- O erro se repete porque o Chromium consulta o EGL a cada frame de renderização
+
+### Solução (se quiser suprimir)
+Adicionar flag no `main.js` para desabilitar GPU acceleration ou suprimir logs EGL:
+```javascript
+// main.js — antes de app.whenReady()
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu');
+```
+
+**NÃO RECOMENDADO** — desabilitar GPU degrada performance. O correto é ignorar o warning.
+
+### Referência
+- [Electron issue #43415](https://github.com/electron/electron/issues/43415) — Bug report confirmado, fechado como "won't fix" (comportamento esperado para GPUs AMD)
+- [Stack Overflow — eglQueryDeviceAttribEXT: Bad attribute](https://stackoverflow.com/questions/57090258/how-to-address-the-error-egl-driver-message-error-eglquerydeviceattribext-bad)
+
+---
+
 ## REFERÊNCIAS
 
 - [electron-builder troubleshooting](https://www.electron.build/docs/troubleshooting/) — "latest.yml / latest-mac.yml / latest-linux.yml only when publishing"
 - [electron-builder issue #9155](https://github.com/electron-userland/electron-builder/issues/9155) — Mac runner throwing errors on random dmg builds
 - [electron-builder issue #4942](https://github.com/electron-userland/electron-builder/issues/4942) — Auto updater error "latest-mac.yml not found"
 - [nickbeaulieu.dev — How we deploy our Electron app](https://nickbeaulieu.dev/posts/deploy-electron-app) — Estratégia de merge dos `.yml` files
+- [Electron issue #43415](https://github.com/electron/electron/issues/43415) — eglQueryDeviceAttribEXT: Bad attribute (AMD GPUs)

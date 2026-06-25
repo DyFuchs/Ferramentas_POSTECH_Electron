@@ -30,7 +30,7 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - font_size, font_weight, font_style
 - shortcuts, activeProfile, colorProfiles (camelCase - formato JS)
 - auto_save_minutos (do select cfg-autosave)
-- report_html (do checkbox cfg-report-html)
+- report_txt, report_csv, report_html (do checkboxes cfg-report-txt, cfg-report-csv, cfg-report-html)
 - auto_check_updates, backup_before_update (do localStorage)
 
 ### saveConfig() (~linha 588)
@@ -48,9 +48,9 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
   - colorProfiles / color_profiles
   - activeProfile / active_profile
 - Aplica checkboxes de versão (via querySelector no versions-editor)
-- Aplica checkbox de relatório (cfg-report-html)
+- Aplica checkboxes de relatório (cfg-report-txt, cfg-report-csv, cfg-report-html)
+- Fallback de relatório: se as novas configs não existirem, assume true para todos.
 
-### saveConfigSilent(cfg) (~linha 570)
 - Limpa campos null/undefined do objeto
 - Envia ao Rust via invokeRust('salvarConfig', { config })
 - Sem feedback visual
@@ -80,21 +80,23 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 ## RUST BACKEND (ConfigApp)
 
 ### ConfigApp struct (~linha 25 do main.rs)
-- Usa #[serde(alias)] em CADA campo para aceitar ambos os formatos (camelCase e snake_case)
-- NÃO usa rename_all (removido para evitar conflito)
-- Campos com alias:
-  - last_used_path / lastUsedPath
-  - confirm_required / confirmRequired
-  - auto_extra / autoExtra
-  - fixed_dest / fixedDest
-  - theme / theme
-  - font_size / fontSize
-  - font_weight / fontWeight
-  - font_style / fontStyle
-  - shortcuts / shortcuts
-  - auto_save_minutos / autoSaveMinutos
-  - active_profile / activeProfile
-  - color_profiles / colorProfiles
+| Campo | Alias (JS) |
+|---|---|
+| last_used_path | lastUsedPath |
+| confirm_required | confirmRequired |
+| auto_extra | autoExtra |
+| fixed_dest | fixedDest |
+| theme | theme |
+| font_size | fontSize |
+| font_weight | fontWeight |
+| font_style | fontStyle |
+| shortcuts | shortcuts |
+| auto_save_minutos | autoSaveMinutos |
+| active_profile | activeProfile |
+| color_profiles | colorProfiles |
+| report_txt | reportTxt |
+| report_csv | reportCsv |
+| report_html | reportHtml |
 
 ### salvar_config() (~linha 568)
 - Serializa ConfigApp para JSON e escreve em arquivo
@@ -262,6 +264,9 @@ Lê TODOS os valores da UI e retorna objeto para salvar:
 - 2026-06-23: Análise crítica: problemas identificados e corrigidos antes de executar
 - 2026-06-25: PROBLEMA 3 — Heredoc EOF no YAML do GitHub Actions causa erro de sintaxe
 - 2026-06-25: Solução: usar write_file em vez de heredoc bash no workflow
+- 2026-06-25: PROBLEMA 4 — update-not-available sem feedback visual na UI
+- 2026-06-25: PROBLEMA 5 — EGL eglQueryDeviceAttribEXT repetitivo (AMD Radeon Mac, não afeta funcionalidade)
+- 2026-06-25: Solução: enviar evento IPC update-not-available para renderer + toast na UI
 - 2026-06-23: Mac Rust corrigido para x86_64 (erro -86 em Mac Intel)
 - 2026-06-23: Mac build com --target x86_64-apple-darwin + cp para target/release/
 - 2026-06-23: Mac icon 512x512 (requisito electron-builder para Mac)

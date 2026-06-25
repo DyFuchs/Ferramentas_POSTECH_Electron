@@ -13,7 +13,10 @@ function buildConfig() {
         theme: document.documentElement.getAttribute('data-theme') || 'dark',
         font_size: document.getElementById('cfg-fontsize') ? document.getElementById('cfg-fontsize').value || '14' : '14',
         font_weight: document.getElementById('cfg-fontweight') ? document.getElementById('cfg-fontweight').value || '600' : '600',
-        font_style: document.getElementById('cfg-fontstyle') ? document.getElementById('cfg-fontstyle').value || 'normal' : 'normal'
+        font_style: document.getElementById('cfg-fontstyle') ? document.getElementById('cfg-fontstyle').value || 'normal' : 'normal',
+        report_html: document.getElementById('cfg-report-html') ? document.getElementById('cfg-report-html').checked : true,
+        report_csv: document.getElementById('cfg-report-csv') ? document.getElementById('cfg-report-csv').checked : true,
+        report_txt: document.getElementById('cfg-report-txt') ? document.getElementById('cfg-report-txt').checked : true
     };
     config.shortcuts = shortcuts;
     config.activeProfile = activeProfile;
@@ -70,6 +73,7 @@ async function saveConfig() {
     setTimeout(function() { if (btn) btn.textContent = originalText; }, 2000);
 }
 
+
 async function loadConfig() {
     var config = null;
     if (electronAvailable && window.invokeRust) {
@@ -81,14 +85,18 @@ async function loadConfig() {
     }
     if (!config) {
         var saved = localStorage.getItem('organizador_config');
-        if (saved) config = JSON.parse(saved);
+        if (saved) {
+            try { config = JSON.parse(saved); } catch(e) { config = null; }
+        }
     }
-    if (config) {
+    if (config && typeof config === 'object') {
         if (config.last_used_path && document.getElementById('global-path')) {
             document.getElementById('global-path').value = config.last_used_path;
         }
-        if (config.confirm_required !== undefined && document.getElementById('cfg-confirm')) {
-            document.getElementById('cfg-confirm').checked = config.confirm_required;
+        var confirmVal = config.confirm_required !== undefined ? config.confirm_required : config.confirmRequired;
+        if (confirmVal !== undefined && confirmVal !== null) {
+            var el = document.getElementById('cfg-confirm');
+            if (el) el.checked = confirmVal;
         }
         if (config.theme === 'light') {
             document.documentElement.setAttribute('data-theme', 'light');
@@ -107,10 +115,26 @@ async function loadConfig() {
             colorProfiles = JSON.parse(JSON.stringify(config.colorProfiles));
         }
         if (config.shortcuts) shortcuts = config.shortcuts;
+
+        // Report formats with fallback
+        const reportConfigs = [
+            { id: 'cfg-report-html', key: 'report_html' },
+            { id: 'cfg-report-csv', key: 'report_csv' },
+            { id: 'cfg-report-txt', key: 'report_txt' }
+        ];
+        reportConfigs.forEach(rc => {
+            const el = document.getElementById(rc.id);
+            if (el) {
+                if (config[rc.key] !== undefined) {
+                    el.checked = config[rc.key];
+                } else {
+                    el.checked = true; // Fallback for old versions
+                }
+            }
+        });
     }
     return config;
 }
-
 function applyFontSettings() {
     var size = document.getElementById('cfg-fontsize') ? document.getElementById('cfg-fontsize').value || '14' : '14';
     var weight = document.getElementById('cfg-fontweight') ? document.getElementById('cfg-fontweight').value || '600' : '600';

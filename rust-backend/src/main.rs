@@ -97,7 +97,7 @@ enum Command {
     LerConfig,
     #[serde(rename = "copiarParaClipboard")]
     CopiarParaClipboard { texto: String },
-        #[serde(rename = "salvarRelatorio")]
+    #[serde(rename = "salvarRelatorio")]
     SalvarRelatorio { caminho: String, conteudo: String },
     #[serde(rename = "salvarProjeto")]
     SalvarProjeto { nome: String, dados: serde_json::Value },
@@ -113,8 +113,9 @@ enum Command {
     ListarArquivos { caminho: String, padrao: String },
     #[serde(rename = "salvarRelatorioHtml")]
     SalvarRelatorioHtml { caminho: String, conteudo: String },
+    #[serde(rename = "lerRelatorio")]
+    LerRelatorio { caminho: String },
 }
-
 #[derive(Serialize, Debug)]
 #[serde(tag = "type")]
 enum Response {
@@ -312,6 +313,139 @@ fn handle_command(cmd: Command) {
             }),
             Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
         },
+                        Command::SalvarRelatorioHtml { caminho, conteudo } => {
+            let html_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.html");
+            match std::fs::write(&html_path, &conteudo) {
+                Ok(_) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(format!("Relatorio HTML salvo em: {}", html_path.display())),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao salvar HTML: {}", e) }),
+            }
+        },
+        Command::LerRelatorio { caminho } => {
+            let report_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.txt");
+            match std::fs::read_to_string(&report_path) {
+                Ok(conteudo) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(conteudo),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao ler relatório: {}", e) }),
+            }
+        },Command::SalvarProjeto { nome, dados } => match salvar_projeto(&nome, &dados) {
+            Ok(path) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(format!("Projeto salvo: {}", path.display())),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::CarregarProjeto { nome } => match carregar_projeto(&nome) {
+            Ok(dados) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: dados,
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::ListarProjetos => match listar_projetos() {
+            Ok(projetos) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(projetos),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::DeletarProjeto { nome } => match deletar_projeto(&nome) {
+            Ok(_) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!("Projeto deletado"),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::RenomearProjeto { nome_antigo, nome_novo } => match renomear_projeto(&nome_antigo, &nome_novo) {
+            Ok(_) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!("Projeto renomeado"),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::ListarArquivos { caminho, padrao } => match listar_arquivos(&caminho, &padrao) {
+            Ok(files) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(files),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+                Command::SalvarRelatorioHtml { caminho, conteudo } => {
+            let html_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.html");
+            match std::fs::write(&html_path, &conteudo) {
+                Ok(_) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(format!("Relatorio HTML salvo em: {}", html_path.display())),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao salvar HTML: {}", e) }),
+            }
+        },
+        Command::LerRelatorio { caminho } => {
+            let report_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.txt");
+            match std::fs::read_to_string(&report_path) {
+                Ok(conteudo) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(conteudo),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao ler relatório: {}", e) }),
+            }
+                },
+        Command::LerRelatorio { caminho } => {
+            let report_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.txt");
+            match std::fs::read_to_string(&report_path) {
+                Ok(conteudo) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(conteudo),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao ler relatório: {}", e) }),
+            }
+        },
+        Command::SalvarProjeto { nome, dados } => match salvar_projeto(&nome, &dados) {
+            Ok(path) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(format!("Projeto salvo: {}", path.display())),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::CarregarProjeto { nome } => match carregar_projeto(&nome) {
+            Ok(dados) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: dados,
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::ListarProjetos => match listar_projetos() {
+            Ok(projetos) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(projetos),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::DeletarProjeto { nome } => match deletar_projeto(&nome) {
+            Ok(_) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!("Projeto deletado"),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::RenomearProjeto { nome_antigo, nome_novo } => match renomear_projeto(&nome_antigo, &nome_novo) {
+            Ok(_) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!("Projeto renomeado"),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
+        Command::ListarArquivos { caminho, padrao } => match listar_arquivos(&caminho, &padrao) {
+            Ok(files) => send_response(0.0, Response::Success {
+                id: 0.0,
+                data: serde_json::json!(files),
+            }),
+            Err(e) => send_response(0.0, Response::Error { id: 0.0, message: e }),
+        },
         Command::SalvarRelatorioHtml { caminho, conteudo } => {
             let html_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.html");
             match std::fs::write(&html_path, &conteudo) {
@@ -320,6 +454,16 @@ fn handle_command(cmd: Command) {
                     data: serde_json::json!(format!("Relatorio HTML salvo em: {}", html_path.display())),
                 }),
                 Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao salvar HTML: {}", e) }),
+            }
+        },
+        Command::LerRelatorio { caminho } => {
+            let report_path = std::path::Path::new(&caminho).join("Relatorio_Organizacao.txt");
+            match std::fs::read_to_string(&report_path) {
+                Ok(conteudo) => send_response(0.0, Response::Success {
+                    id: 0.0,
+                    data: serde_json::json!(conteudo),
+                }),
+                Err(e) => send_response(0.0, Response::Error { id: 0.0, message: format!("Erro ao ler relatório: {}", e) }),
             }
         },
     });

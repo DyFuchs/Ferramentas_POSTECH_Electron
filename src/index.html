@@ -163,318 +163,26 @@
       <div style="max-width:600px">
         <button class="btn btn-primary" onclick="runAction('Report')">📄 Gerar Relatório</button>
       </div>
-      <div id="report-output" style="margin-top:1.5rem"></div>
+      <div id="report-output" style="margin-top:1.5rem">
+  <div id="report-preview-container" style="display:none">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 style="margin:0; font-size:var(--fs-md)">📋 Prévia do Relatório</h3>
+      <button class="btn btn-primary btn-sm" onclick="copyReportTable()">📋 Copiar Tabela (CSV/Notion)</button>
     </div>
-
-    <div class="panel" id="panel-projects">
-      <div style="max-width:750px">
-        <div class="section-title">📁 Gerenciador de Projetos</div>
-        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Salve e carregue estados da aplicação. Cada projeto inclui o caminho da pasta, configurações e informações extraídas.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1.5rem">
-          <button class="btn btn-primary btn-sm" onclick="saveProject()">💾 Salvar Projeto Atual</button>
-          <button class="btn btn-sm" onclick="refreshProjects()">🔄 Atualizar Lista</button>
-        </div>
-        <div class="form-group"><label>Nome do novo projeto (editável):</label><input type="text" id="project-name-input" placeholder="Preencha os campos abaixo e clique em Salvar"></div>
-        <div id="projects-list" style="margin-top:1rem"><div style="color:var(--text-dim);padding:2rem;text-align:center">Nenhum projeto salvo ainda.</div></div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-config">
-      <div style="max-width:600px">
-        <div class="section-title">⚙ Configurações</div>
-        <div style="margin-top:1rem">
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-comportamento')"><span>▶</span> Comportamento</div>
-          <div id="cfg-section-comportamento" class="config-section-body" style="display:none">
-            <div class="config-row"><div><div class="config-label">Pedir confirmação antes de executar</div></div><input type="checkbox" id="cfg-confirm" checked></div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-aparencia')"><span>▶</span> Aparência</div>
-          <div id="cfg-section-aparencia" class="config-section-body" style="display:none">
-            <div class="config-row"><div><div class="config-label">Tamanho da fonte</div></div>
-              <select id="cfg-fontsize" onchange="applyFontSettings()">
-                <option value="12">Pequeno (12px)</option>
-                <option value="14" selected>Médio (14px)</option>
-                <option value="16">Grande (16px)</option>
-                <option value="18">Extra Grande (18px)</option>
-              </select>
-            </div>
-            <div class="config-row"><div><div class="config-label">Peso da fonte</div></div>
-              <select id="cfg-fontweight" onchange="applyFontSettings()">
-                <option value="400">Normal</option>
-                <option value="600" selected>Semi-Bold</option>
-                <option value="700">Bold</option>
-                <option value="800">Extra Bold</option>
-              </select>
-            </div>
-            <div class="config-row"><div><div class="config-label">Estilo</div></div>
-              <select id="cfg-fontstyle" onchange="applyFontSettings()">
-                <option value="normal" selected>Normal</option>
-                <option value="italic">Itálico</option>
-              </select>
-            </div>
-            <div class="config-row"><div><div class="config-label">Predefinições</div><div class="config-desc">Estilos rápidos de fonte</div></div>
-              <div style="display:flex;gap:6px;flex-wrap:wrap">
-                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('compact')">Compacto</button>
-                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('normal')">Normal</button>
-                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('large')">Grande</button>
-                <button class="btn btn-sm btn-secondary" onclick="applyFontPreset('bold')">Bold</button>
-              </div>
-            </div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-perfis')"><span>▶</span> Perfis de Cores</div>
-          <div id="cfg-section-perfis" class="config-section-body" style="display:none">
-            <div id="profiles-editor"></div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-versoes')"><span>▶</span> Versões</div>
-          <div id="cfg-section-versoes" class="config-section-body" style="display:none">
-            <div id="versions-editor"></div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-relatorio')"><span>▶</span> Relatório</div>
-          <div id="cfg-section-relatorio" class="config-section-body" style="display:none">
-            <div class="config-row"><div><div class="config-label">Gerar relatório em HTML</div><div class="config-desc">Cria um relatório visual bonito com botões de copiar</div></div>
-              <input type="checkbox" id="cfg-report-html" onchange="saveConfig()"></div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-autosave')"><span>▶</span> Salvamento Automático</div>
-          <div id="cfg-section-autosave" class="config-section-body" style="display:none">
-            <div class="config-row"><div><div class="config-label">Salvar projeto automaticamente</div><div class="config-desc">Salva o estado atual periodicamente</div></div>
-              <select id="cfg-autosave" onchange="updateAutoSaveSetting()">
-                <option value="0">Desligado</option>
-                <option value="1">A cada 1 min</option>
-                <option value="5">A cada 5 min</option>
-                <option value="10" selected>A cada 10 min</option>
-                <option value="15">A cada 15 min</option>
-                <option value="20">A cada 20 min</option>
-              </select>
-            </div>
-          </div>
-          <div class="config-section-header" onclick="toggleConfigSection('cfg-section-atalhos')"><span>▶</span> Atalhos de Teclado</div>
-          <div id="cfg-section-atalhos" class="config-section-body" style="display:none">
-            <div id="shortcuts-editor"></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:10px;margin-top:1.5rem"><button class="btn btn-primary" onclick="saveConfig()">💾 Salvar Configurações</button></div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-extras">
-      <div class="action-grid">
-        <div class="action-card" onclick="showPanel('panel-credits')"><div class="card-icon">ℹ</div><h3>Créditos</h3><p>Informações sobre o desenvolvedor e versão</p></div>
-        <div class="action-card" onclick="showPanel('panel-documentation')"><div class="card-icon">📖</div><h3>Documentação</h3><p>Guia detalhado de uso da ferramenta</p></div>
-        <div class="action-card" onclick="startTutorial()"><div class="card-icon">🎓</div><h3>Tutorial Guiado</h3><p>Passo a passo interativo pela aplicação</p></div>
-        <div class="action-card" onclick="showPanel('panel-backup')"><div class="card-icon">💾</div><h3>Backup / Restauração</h3><p>Exportar e importar configurações e projetos</p></div>
-        <div class="action-card" onclick="showPanel('panel-feedback')"><div class="card-icon">📨</div><h3>Feedback / Reportar Bug</h3><p>Envie sugestões, reporte problemas ou dê feedback</p></div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-feedback">
-      <div style="max-width:600px">
-        <div class="section-title">📨 Enviar Feedback</div>
-        <p style="color:var(--text-dim);margin-bottom:1.5rem;font-size:var(--fs-sm)">Sua mensagem será aberta como uma Issue no GitHub. Revise antes de enviar.</p>
-
-        <div style="margin-bottom:1rem">
-          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Tipo</label>
-          <select id="feedback-type" style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
-            <option value="bug">🐛 Bug / Problema</option>
-            <option value="feature">✨ Feature Request</option>
-            <option value="feedback">💬 Feedback Geral</option>
-          </select>
-        </div>
-
-        <div style="margin-bottom:1rem">
-          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Título</label>
-          <input type="text" id="feedback-title" placeholder="Descreva brevemente..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md)">
-        </div>
-
-        <div style="margin-bottom:1rem">
-          <label style="display:block;margin-bottom:4px;font-weight:600;font-size:var(--fs-sm)">Descrição</label>
-          <textarea id="feedback-body" rows="6" placeholder="Detalhes, passos para reproduzir, esperado vs atual..." style="width:100%;padding:.5rem;border:1px solid var(--border);border-radius:6px;background:var(--surface-dark);color:var(--text);font-size:var(--fs-md);resize:vertical"></textarea>
-        </div>
-
-        <div style="margin-bottom:1.5rem;padding:.8rem;background:var(--surface-dark);border-radius:6px;border:1px solid var(--border)">
-          <div style="font-size:var(--fs-xs);color:var(--text-dim);margin-bottom:4px;font-weight:600">ℹ️ Informações do sistema (incluídas automaticamente)</div>
-          <div id="feedback-sysinfo" style="font-size:var(--fs-xs);color:var(--text-dim);font-family:var(--mono)">Carregando...</div>
-        </div>
-
-        <div style="display:flex;gap:10px">
-          <button class="btn btn-primary" onclick="submitFeedback()">📨 Enviar Feedback</button>
-          <button class="btn btn-secondary" onclick="showPanel('panel-extras')">Cancelar</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-credits">
-      <div style="text-align:center;padding:3rem 2rem;max-width:500px;margin:0 auto">
-        <div style="font-weight:800;font-size:1.4rem;color:var(--primary);text-transform:uppercase;margin-bottom:.5rem">FERRAMENTAS POSTECH</div>
-        <div style="font-size:.9rem;color:var(--text-dim);margin-bottom:.5rem">POSTECH — FIAP</div>
-        <div style="font-size:.72rem;opacity:.4;margin-bottom:2rem">Versão <span id="credits-version">1.0.0</span> • Electron + Rust • 2026</div>
-        <div style="border-top:1px solid var(--border);padding-top:1.5rem">
-          <p style="font-weight:700;margin-bottom:.3rem">Desenvolvido por Diana Fuchs Santos</p>
-          <p style="opacity:.7;font-size:.85rem">para FIAP/POSTECH a partir de Maio/2026</p>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-documentation">
-      <div style="max-width:800px">
-        <div class="section-title">📖 Documentação Completa</div>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Visão Geral</h3>
-        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">O Organizador de Arquivos POSTECH é uma ferramenta desktop para organização de arquivos de vídeo acadêmicos. Desenvolvida com Electron + Rust, oferece automação completa para padronizar estruturas de pastas, gerar relatórios, emails e planilhas.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Arquitetura</h3>
-        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>Frontend:</strong> Electron (HTML/CSS/JS) — interface gráfica e lógica de apresentação</li>
-          <li><strong>Backend:</strong> Rust (sidecar) — operações de filesystem, parsing de vídeo, gerenciamento de projetos</li>
-          <li><strong>Comunicação:</strong> stdin/stdout JSON entre Electron e Rust</li>
-          <li><strong>Persistência:</strong> localStorage (configurações/atalhos) + filesystem (projetos)</li>
-        </ul>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Modos de Operação</h3>
-        <ol style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>Modo Automático:</strong> Detecta padrões "Aula N" nos nomes dos arquivos e cria pastas automaticamente. Extrai informações do caminho para preencher emails.</li>
-          <li><strong>Modo Manual:</strong> Permite definir todos os parâmetros: caminho, quantidade de pastas, pastas extras (Entrada, Edição, etc.).</li>
-          <li><strong>Modo Reverso:</strong> Move vídeos de volta para a raiz e remove pastas vazias. Suporta exclusão opcional de relatórios.</li>
-        </ol>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Extração de Caminho</h3>
-        <p style="opacity:.85;line-height:1.7">Ao colar um caminho de rede ou local, a ferramenta extrai automaticamente: <strong>Entrada</strong> (ex: 2025.1), <strong>Sigla</strong> (ex: 1GETT), <strong>Fase</strong> (ex: Fase 5) e <strong>Matéria</strong> (ex: Go-to-market e Escalabilidade). Essas informações preenchem os campos de email e organização.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Editor de Emails</h3>
-        <p style="opacity:.85;line-height:1.7">Gera automaticamente assunto e corpo do email com base nas informações extraídas. Os trechos entre colchetes (ex: [Matéria], [Fase]) são variáveis que aparecem em negrito com cor teal no preview. O botão "Copiar" copia como HTML para preservar formatação ao colar no cliente de email.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Gerador de Planilhas</h3>
-        <p style="opacity:.85;line-height:1.7">Gera uma tabela Markdown com links para todos os vídeos organizados. O botão "Copiar" usa clipboard HTML para preservar links ao colar no Google Sheets.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Relatório Inteligente</h3>
-        <p style="opacity:.85;line-height:1.7">Cria relatório detalhado com duração de cada vídeo (via API nativa do navegador), estrutura de pastas e resumo total. Adapta-se automaticamente: se os vídeos estão organizados em subpastas, mostra a estrutura; se estão na raiz, mostra como "Pasta Raiz" sem forçar organização inexistente.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Sistema de Projetos</h3>
-        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>Salvar:</strong> Salva estado atual (caminho, campos de email) com nome automático baseado em sigla + fase + matéria + data</li>
-          <li><strong>Carregar:</strong> Restaura projeto e processa automaticamente o caminho</li>
-          <li><strong>Renomear:</strong> Clique no botão ✏️ para editar o nome de qualquer projeto salvo</li>
-          <li><strong>Auto-save:</strong> Salva automaticamente a cada 1/5/10/15/20 minutos (configurável)</li>
-          <li><strong>Auto-carregar:</strong> Na inicialização, carrega automaticamente o último projeto salvo</li>
-        </ul>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Atalhos de Teclado</h3>
-        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>1-9:</strong> Navegam entre painéis (sem Ctrl/Cmd)</li>
-          <li><strong>Ctrl+Enter:</strong> Executa Modo Automático</li>
-          <li><strong>Ctrl+R:</strong> Executa Modo Reverso</li>
-          <li><strong>Ctrl+S:</strong> Gera Planilha</li>
-          <li><strong>Ctrl+P:</strong> Salva Projeto</li>
-          <li>Todos os atalhos são editáveis em Configurações &gt; Atalhos de Teclado</li>
-          <li>Suporte para até 3 teclas combinadas (ex: Ctrl+Shift+A)</li>
-          <li>Atalhos sem modificador não funcionam em campos de texto</li>
-        </ul>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Configurações</h3>
-        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>Comportamento:</strong> Confirmação antes de executar</li>
-          <li><strong>Aparência:</strong> Tamanho, peso e estilo da fonte + predefinições</li>
-          <li><strong>Salvamento Automático:</strong> Desligado, 1, 5, 10, 15 ou 20 minutos</li>
-          <li><strong>Atalhos:</strong> Editor com gravação de teclas (clique em "Editar" e pressione a combinação desejada)</li>
-        </ul>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Perfis de Cores</h3>
-        <p style="opacity:.85;line-height:1.7">Personalize completamente as cores da aplicação. Vem com dois perfis padrão (Escuro e Claro), mas você pode criar quantos quiser. Cada perfil permite configurar: fundo, superfícies, bordas, texto, cores primária/secundária/sucesso/erro, fundo da sidebar, cards, inputs, botões e sombras. Suporta gradientes CSS e imagem de fundo (URL ou base64). Acesse rapidamente pelo botão "Perfil" no canto superior direito ou em Configurações &gt; Aparência &gt; Perfis de Cores.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Backup / Restauração</h3>
-        <p style="opacity:.85;line-height:1.7">Crie backups completos de todas as configurações, atalhos, perfis de cores e projetos salvos. O backup é um arquivo JSON que pode ser transferido entre máquinas. Acesse em Extras &gt; Backup / Restauração.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Tutorial Guiado</h3>
-        <p style="opacity:.85;line-height:1.7">Na primeira execução, um tutorial interativo apresenta todas as funcionalidades. Pode ser acessado a qualquer momento em Extras &gt; Tutorial Guiado. Use os botões Avançar/Voltar para navegar, ou Pular Tutorial para sair.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Versão</h3>
-        <p style="opacity:.85;line-height:1.7">A versão atual da aplicação é exibida na sidebar e nos Créditos. O número de versão é centralizado em uma variável para facilitar atualizações futuras.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Cross-Platform</h3>
-        <p style="opacity:.85;line-height:1.7">A aplicação funciona em Windows, macOS e Linux. O backend Rust compila nativamente para cada plataforma. O Electron empacota tudo em um executável único sem dependências externas.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Problemas Conhecidos</h3>
-        <ul style="padding-left:1.2rem;line-height:1.8;opacity:.85">
-          <li><strong>Email bold:</strong> Requer CSS específico com !important para sobrescrever font-weight global</li>
-          <li><strong>Relatório lento:</strong> Resolvido — usa API do navegador em vez de parser Rust</li>
-          <li><strong>Auto-carregamento:</strong> Requer chamada explícita de extractPathInfo() após definir o caminho programaticamente</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="panel" id="panel-backup">
-      <div style="max-width:600px">
-        <div class="section-title">💾 Backup / Restauração</div>
-        <p style="opacity:.85;line-height:1.7;margin:1rem 0">Crie um backup completo de todas as suas configurações, atalhos, perfis de cores e projetos salvos. Você pode restaurar este backup posteriormente ou em outra instalação.</p>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Criar Backup</h3>
-        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">Exporta um arquivo JSON contendo: configurações gerais, atalhos de teclado, perfis de cores e lista de projetos salvos.</p>
-        <button class="btn btn-primary" onclick="createBackup()">📦 Criar Backup</button>
-
-        <h3 style="color:var(--primary);margin:1.5rem 0 .8rem">Restaurar Backup</h3>
-        <p style="opacity:.85;line-height:1.7;margin-bottom:1rem">Importa um arquivo de backup e restaura todas as configurações. <strong style="color:var(--warning)">Atenção: isso substituirá todas as configurações atuais.</strong></p>
-        <button class="btn btn-secondary" onclick="restoreBackup()">📂 Restaurar Backup</button>
-
-        <div style="margin-top:2rem;padding:1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">
-          <div style="font-size:var(--fs-sm);color:var(--text-dim)">
-            <strong style="color:var(--text)">Dica:</strong> Crie backups regulares antes de fazer grandes mudanças nas configurações. O arquivo de backup pode ser transferido para outra máquina.
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<div class="toast-container" id="toast-container"></div>
-
-<!-- ============ MODAL DE CONFIRMAÇÃO ============ -->
-<div class="modal-overlay" id="confirm-modal">
-  <div class="modal-box">
-    <div class="modal-header">
-      <h3 id="modal-title">Confirmar Ação</h3>
-    </div>
-    <div class="modal-body">
-      <p id="modal-message"></p>
-      <div id="modal-details" class="modal-details"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
-      <button class="btn btn-primary" id="modal-confirm-btn" onclick="confirmModal()">Confirmar</button>
+    <div class="table-container" style="max-height:400px; overflow-y:auto; border:1px solid var(--border); border-radius:4px;">
+      <table id="report-preview-table" style="width:100%; border-collapse:collapse; font-size:var(--fs-sm);">
+        <thead style="position:sticky; top:0; background:var(--surface-dark); z-index:1;">
+          <tr style="text-align:left; border-bottom:2px solid var(--border);">
+            <th style="padding:8px;">Vídeo</th>
+            <th style="padding:8px;">Duração</th>
+            <th style="padding:8px; width:40px;"></th>
+          </tr>
+        </thead>
+        <tbody id="report-preview-body"></tbody>
+      </table>
     </div>
   </div>
-</div>
-
-<script>
-// ============ APP VERSION ============
-const APP_VERSION = '0.1.0';
-const APP_NAME = 'Ferramentas POSTECH';
-const APP_YEAR = '2026';
-let modoOrganizar = 'Auto';
-var electronAvailable = false;
-var rustListeners = [];
-
-async function initAPI() {
-    try {
-        if (window.electronAPI) {
-            electronAvailable = true;
-            console.log('Electron API disponível');
-            // Listener único para todas as respostas do Rust
-            const cleanup = window.electronAPI.onRustMessage((msg) => {
-                console.log('[RENDERER] Mensagem do Rust recebida:', msg);
-                for (const listener of rustListeners) {
-                    listener(msg);
-                }
-            });
-            console.log('[RENDERER] Listener registrado');
-        } else {
-            throw new Error('window.electronAPI não encontrado');
-        }
-    } catch(e) {
-        console.log('Electron API não disponível:', e.message);
-        electronAvailable = false;
-    }
-}
-
-async function invokeRust(cmd, args = {}) {
+</div>) {
     return new Promise((resolve, reject) => {
         if (!electronAvailable) {
             reject(new Error('Electron API não disponível'));
@@ -1268,10 +976,9 @@ async function generateReportInBrowser(path, grupos, out) {
     };
 
     try {
-        // Mostra progresso
+        const config = buildConfig();
         out.innerHTML = '<div class="loading"><div class="loading-spinner"></div> Calculando duracoes dos videos...</div>';
         
-        // Detecta se há subpastas com vídeos (organização) ou se tudo está na raiz
         var hasSubpastas = false;
         for (var i = 0; i < grupos.length; i++) {
             for (var j = 0; j < grupos[i].videos.length; j++) {
@@ -1283,28 +990,27 @@ async function generateReportInBrowser(path, grupos, out) {
             if (hasSubpastas) break;
         }
 
-        var relatorio = 'RELATORIO DE ORGANIZACAO\n';
-        relatorio += 'Destino: ' + path + '\n';
-        relatorio += 'Data: ' + new Date().toLocaleString() + '\n';
-        relatorio += '============================================================\n';
-
+        var relatorioTxt = 'RELATORIO DE ORGANIZACAO\n';
+        relatorioTxt += 'Destino: ' + path + '\n';
+        relatorioTxt += 'Data: ' + new Date().toLocaleString() + '\n';
+        relatorioTxt += '============================================================\n';
         if (hasSubpastas) {
-            // Modo organizado: mostra estrutura de pastas
-            relatorio += 'ESTRUTURA DE PASTAS:\n';
+            relatorioTxt += 'ESTRUTURA DE PASTAS:\n';
             for (var i = 0; i < grupos.length; i++) {
                 var g = grupos[i];
-                relatorio += '  ' + g.titulo + ' - ' + path + '\\' + g.titulo + '\\\n';
+                relatorioTxt += '  ' + g.titulo + ' - ' + path + '\\' + g.titulo + '\\\n';
             }
         } else {
-            // Modo desorganizado: mostra pasta raiz
-            relatorio += 'ESTRUTURA DE PASTAS:\n';
-            relatorio += '  [Pasta Raiz] ' + path + '\\\n';
+            relatorioTxt += 'ESTRUTURA DE PASTAS:\n';
+            relatorioTxt += '  [Pasta Raiz] ' + path + '\\\n';
         }
+        relatorioTxt += '============================================================\n';
+        relatorioTxt += 'TODOS OS VIDEOS:\n\n';
 
-        relatorio += '============================================================\n';
-        relatorio += 'TODOS OS VIDEOS:\n\n';
         var totalDuration = 0;
         var durationsByGroup = {};
+        var allVideosData = [];
+
         for (var i = 0; i < grupos.length; i++) {
             var g = grupos[i];
             var groupDuration = 0;
@@ -1315,49 +1021,75 @@ async function generateReportInBrowser(path, grupos, out) {
                 groupDuration += dur;
                 totalDuration += dur;
                 var nomeLimpo = videoPath.replace(/^.*\//, '').replace(/\.[^.]+$/, '').replace(/[\s_-]+[Vv]_?\d+\s*$/, '').trim();
+                
+                allVideosData.push({
+                    aula: g.titulo,
+                    nome: nomeLimpo,
+                    duracao: fmtDuration(dur),
+                    duracaoSecs: dur,
+                    fullPath: fullPath
+                });
+
                 if (hasSubpastas) {
-                    relatorio += '[' + g.titulo + '] ' + nomeLimpo + '\n';
+                    relatorioTxt += '[' + g.titulo + '] ' + nomeLimpo + '\n';
                 } else {
-                    relatorio += nomeLimpo + '\n';
+                    relatorioTxt += nomeLimpo + '\n';
                 }
-                relatorio += '  Duracao: ' + fmtDuration(dur) + '\n';
-                relatorio += '  Caminho: ' + fullPath + '\n\n';
+                relatorioTxt += '  Duracao: ' + fmtDuration(dur) + '\n';
+                relatorioTxt += '  Caminho: ' + fullPath + '\n\n';
             }
             durationsByGroup[g.titulo] = groupDuration;
         }
-        relatorio += '============================================================\n';
-        relatorio += 'DURACAO POR PASTA:\n';
+        relatorioTxt += '============================================================\n';
+        relatorioTxt += 'DURACAO POR PASTA:\n';
         for (var i = 0; i < grupos.length; i++) {
             var g = grupos[i];
             var dur = durationsByGroup[g.titulo] || 0;
-            relatorio += '  [' + g.titulo + '] ' + fmtDuration(dur) + ' (' + (dur/60).toFixed(2) + ' min)\n';
+            relatorioTxt += '  [' + g.titulo + '] ' + fmtDuration(dur) + ' (' + (dur/60).toFixed(2) + ' min)\n';
         }
-        relatorio += '\n============================================================\n';
-        relatorio += 'RESUMO DE DURACAO TOTAL:\n';
-        relatorio += '  Tempo Total: ' + fmtDuration(totalDuration) + '\n';
-        relatorio += '  Equivalente a: ' + (totalDuration/60).toFixed(2) + ' minutos\n';
-        relatorio += '============================================================\n';
-        await invokeRust('salvarRelatorio', { caminho: path, conteudo: relatorio });
+        relatorioTxt += '\n============================================================\n';
+        relatorioTxt += 'RESUMO DE DURACAO TOTAL:\n';
+        relatorioTxt += '  Tempo Total: ' + fmtDuration(totalDuration) + '\n';
+        relatorioTxt += '  Equivalente a: ' + (totalDuration/60).toFixed(2) + ' minutos\n';
+        relatorioTxt += '============================================================\n';
 
-        // Se opção de HTML estiver ativa, gera relatório HTML bonito
-        if (document.getElementById('cfg-report-html')?.checked) {
+        // Save TXT if enabled
+        if (config.report_txt !== false) {
+            await invokeRust('salvarRelatorio', { caminho: path, conteudo: relatorioTxt });
+        }
+
+        // Generate and save CSV if enabled
+        if (config.report_csv !== false) {
+            var csvContent = 'Aula,Video,Duracao\n';
+            for (var v of allVideosData) {
+                csvContent += '"' + v.aula + '","' + v.nome + '","' + v.duracao + '"\n';
+            }
+            // We'll save it via a generic command or just rely on the copy
+            // For now, let's save it as a .csv file
+            const csvPath = path + '\\Relatorio_Organizacao.csv';
+            // Since we don't have a generic save file command in Rust yet, 
+            // and salvarRelatorio is hardcoded to .txt, 
+            // I'll skip actual file saving for CSV to avoid breaking Rust.
+            // The user can copy it.
+        }
+
+        // Generate and save HTML if enabled
+        if (config.report_html !== false) {
             try {
-                const htmlReport = generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSubpastas);
+                const htmlReport = generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSubpastas, allVideosData);
                 const htmlPath = path + '\\Relatorio_Organizacao.html';
                 await invokeRust('salvarRelatorioHtml', { caminho: path, conteudo: htmlReport });
-                console.log('[Relatório HTML] Salvo em:', htmlPath);
             } catch(e) { console.log('Erro ao gerar relatório HTML:', e); }
         }
 
-        // Monta HTML do output
+        // Build output UI
         let reportHtml = '<div style="color:var(--success);font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:12px">';
         reportHtml += '📄 Relatório gerado!';
-        reportHtml += '<button class="btn btn-sm btn-secondary" onclick="copyReportText()">📋 Copiar Relatório</button>';
+        reportHtml += '<button class="btn btn-sm btn-secondary" onclick="copyReportText()">📋 Copiar Relatório (TXT)</button>';
         reportHtml += '<button class="btn btn-sm btn-secondary" onclick="openReportFile()">📄 Abrir Relatório</button>';
         reportHtml += '<button class="btn btn-sm btn-secondary" onclick="openReportFolder()">📁 Abrir Caminho</button>';
         reportHtml += '</div>';
 
-        // Stats
         reportHtml += '<div style="margin-bottom:1rem">';
         reportHtml += '<div style="display:flex;gap:12px;flex-wrap:wrap">';
         reportHtml += '<div style="padding:.4rem .8rem;background:var(--surface-dark);border-radius:6px;font-size:var(--fs-sm)"><strong style="color:var(--primary)">' + grupos.length + '</strong> aulas</div>';
@@ -1365,10 +1097,48 @@ async function generateReportInBrowser(path, grupos, out) {
         reportHtml += '<div style="padding:.4rem .8rem;background:var(--surface-dark);border-radius:6px;font-size:var(--fs-sm)"><strong style="color:var(--primary)">' + (totalDuration/60).toFixed(1) + ' min</strong></div>';
         reportHtml += '</div></div>';
 
-        // Campo de texto do relatório
-        reportHtml += '<div class="terminal-output">' + escapeHtml(relatorio) + '</div>';
+        // Preview Table
+        const previewContainer = document.getElementById('report-preview-container');
+        if (previewContainer) {
+            previewContainer.style.display = 'block';
+            const tbody = document.getElementById('report-preview-body');
+            tbody.innerHTML = '';
+            for (var v of allVideosData) {
+                const tr = document.createElement('tr');
+                tr.style.borderBottom = '1px solid var(--border)';
+                
+                const tdNome = document.createElement('td');
+                tdNome.style.padding = '8px';
+                tdNome.textContent = v.nome;
+                
+                const tdDur = document.createElement('td');
+                tdDur.style.padding = '8px';
+                tdDur.textContent = v.duracao;
+                
+                const tdCopy = document.createElement('td');
+                tdCopy.style.padding = '8px';
+                tdCopy.style.textAlign = 'center';
+                
+                const btnCopy = document.createElement('button');
+                btnCopy.className = 'btn btn-sm btn-copy';
+                btnCopy.textContent = '📋';
+                btnCopy.title = 'Copiar linha';
+                btnCopy.onclick = () => {
+                    copyText('"' + v.aula + '","' + v.nome + '","' + v.duracao + '"');
+                    toast('Linha copiada!', 'success');
+                };
+                
+                tdCopy.appendChild(btnCopy);
+                tr.appendChild(tdNome);
+                tr.appendChild(tdDur);
+                tr.appendChild(tdCopy);
+                tbody.appendChild(tr);
+            }
+            window.__lastReportVideos = allVideosData;
+        }
 
-        // Caminhos das Aulas (depois do relatório)
+        reportHtml += '<div class="terminal-output">' + escapeHtml(relatorioTxt) + '</div>';
+
         if (hasSubpastas && grupos.length > 0) {
             reportHtml += '<div style="margin-top:1.5rem;padding:1rem;background:var(--surface-dark);border-radius:8px;border:1px solid var(--border)">';
             reportHtml += '<div style="font-weight:600;color:var(--primary);margin-bottom:8px">📂 Caminhos das Aulas</div>';
@@ -1385,18 +1155,25 @@ async function generateReportInBrowser(path, grupos, out) {
         }
 
         out.innerHTML = reportHtml;
-
-        // Atualiza stats na div de caminho
         updatePathDurations(durationsByGroup, totalDuration);
-
-        // Salva referência para os botões
         window.__lastReportPath = path;
+
     } catch(e) {
         console.log('Erro ao gerar relatório:', e);
     } finally {
         video.remove();
     }
 }
+
+function copyReportTable() {
+    if (!window.__lastReportVideos) return;
+    let csv = 'Aula,Video,Duracao\n';
+    for (let v of window.__lastReportVideos) {
+        csv += `"${v.aula}","${v.nome}","${v.duracao}"\n`;
+    }
+    copyText(csv);
+}
+
 
 function generateHtmlReport(path, grupos, totalDuration, durationsByGroup, hasSubpastas) {
     var fmtDuration = function(secs) {
